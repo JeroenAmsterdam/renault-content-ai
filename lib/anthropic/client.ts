@@ -7,17 +7,33 @@
 
 import Anthropic from '@anthropic-ai/sdk'
 
-// Validate API key
-if (!process.env.ANTHROPIC_API_KEY) {
-  throw new Error('ANTHROPIC_API_KEY environment variable is required')
+// Lazy-loaded client instance
+let _anthropic: Anthropic | null = null
+
+/**
+ * Get Anthropic client instance (lazy loaded)
+ * This allows environment variables to be loaded before initialization
+ */
+function getAnthropicClient(): Anthropic {
+  if (!_anthropic) {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new Error('ANTHROPIC_API_KEY environment variable is required')
+    }
+    _anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY!,
+    })
+  }
+  return _anthropic
 }
 
 /**
  * Main Anthropic client instance
  * Shared across all agents for efficiency
  */
-export const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
+export const anthropic = new Proxy({} as Anthropic, {
+  get(target, prop) {
+    return getAnthropicClient()[prop as keyof Anthropic]
+  },
 })
 
 /**

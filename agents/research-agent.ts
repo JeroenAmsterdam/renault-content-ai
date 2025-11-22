@@ -101,7 +101,7 @@ export async function runResearchAgent(
       temperature: 0.3, // Lower temp for more factual output
       tools: [
         {
-          type: 'web_search_20241122' as const,
+          type: 'web_search_20250305' as const,
           name: 'web_search',
         },
       ],
@@ -128,19 +128,33 @@ Return het resultaat als een geldig JSON object.`,
       throw new Error('No text response from agent')
     }
 
-    // Extract JSON from response (handle markdown code blocks)
+    // Extract JSON from response (handle markdown code blocks and narrative text)
     let jsonText = textContent.text
+
+    console.log('Raw response preview:', jsonText.substring(0, 200))
+
+    // Try to extract JSON from markdown code blocks first
     const codeBlockMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
     if (codeBlockMatch) {
       jsonText = codeBlockMatch[1]
     } else {
+      // Try to find JSON object in text
       const jsonMatch = jsonText.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
         jsonText = jsonMatch[0]
+      } else {
+        console.error('Could not find JSON in response:', jsonText)
+        throw new Error('No JSON object found in agent response')
       }
     }
 
-    const result = JSON.parse(jsonText) as Omit<ResearchResult, 'duration'>
+    let result: Omit<ResearchResult, 'duration'>
+    try {
+      result = JSON.parse(jsonText)
+    } catch (parseError) {
+      console.error('JSON parse error. Extracted text:', jsonText)
+      throw new Error(`Failed to parse JSON: ${parseError}`)
+    }
 
     // Validate result structure
     if (!result.facts || !Array.isArray(result.facts)) {
@@ -150,9 +164,14 @@ Return het resultaat als een geldig JSON object.`,
     // Filter out low-confidence facts
     const verifiedFacts = result.facts.filter((fact) => fact.confidence >= 0.7)
 
-    // Store facts in database
+    // Store facts in database (optional - don't fail if database is unavailable)
     if (verifiedFacts.length > 0) {
-      await storeFacts(verifiedFacts, topic)
+      try {
+        await storeFacts(verifiedFacts, topic)
+      } catch (error) {
+        console.warn('⚠️  Could not store facts in database (continuing anyway):', error)
+        // Don't throw - research succeeded even if storage failed
+      }
     }
 
     const duration = Date.now() - startTime

@@ -7,12 +7,13 @@
  * operation on Renault Trucks E-Tech topics.
  */
 
-import { runResearchAgent } from '../agents/research-agent'
+// Load environment variables FIRST (before any imports)
 import { config } from 'dotenv'
 import path from 'path'
-
-// Load environment variables
 config({ path: path.resolve(process.cwd(), '.env.local') })
+
+// Now import the agent
+import { runResearchAgent } from '../agents/research-agent'
 
 async function main() {
   console.log('🧪 Testing Research Agent...\n')
