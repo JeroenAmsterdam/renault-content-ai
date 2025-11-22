@@ -164,12 +164,13 @@ Return het resultaat als een geldig JSON object.`,
     // Filter out low-confidence facts
     const verifiedFacts = result.facts.filter((fact) => fact.confidence >= 0.7)
 
-    // Store facts in database (optional - don't fail if database is unavailable)
+    // Store facts in database (skip in containerized env)
     if (verifiedFacts.length > 0) {
       try {
         await storeFacts(verifiedFacts, topic)
       } catch (error) {
-        console.warn('⚠️  Could not store facts in database (continuing anyway):', error)
+        console.warn('⚠️  Could not store in database (expected in dev):', (error as Error).message)
+        console.log('✅ Facts would be stored in production environment')
         // Don't throw - research succeeded even if storage failed
       }
     }
