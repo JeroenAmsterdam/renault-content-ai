@@ -24,6 +24,17 @@ export interface ResearchResult {
 }
 
 // ============================================================================
+// VALIDATOR AGENT TYPES
+// ============================================================================
+
+export interface ValidationResult {
+  approved: Fact[]
+  rejected: Array<Fact & { rejectionReason: string }>
+  summary: string
+  approvalRate: number
+}
+
+// ============================================================================
 // AGENT CONFIGURATION
 // ============================================================================
 

@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:research": "tsx scripts/test-research-agent.ts"
+    "test:research": "tsx scripts/test-research-agent.ts",
+    "test:validator": "tsx scripts/test-validator.ts",
+    "test:chain": "tsx scripts/test-validator.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.70.1",
