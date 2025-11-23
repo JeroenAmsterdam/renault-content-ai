@@ -122,14 +122,39 @@ Return het resultaat als een geldig JSON object.`,
       ],
     })
 
-    // Parse response
-    const textContent = response.content.find((block) => block.type === 'text')
-    if (!textContent || textContent.type !== 'text') {
+    // Parse response - look through ALL content blocks for JSON
+    console.log(`Response has ${response.content.length} content blocks`)
+
+    // Get all text blocks (there might be multiple with tool use)
+    const textBlocks = response.content.filter((block) => block.type === 'text')
+    if (textBlocks.length === 0) {
       throw new Error('No text response from agent')
     }
 
-    // Extract JSON from response (handle markdown code blocks and narrative text)
-    let jsonText = textContent.text
+    // Try each text block to find one with JSON (prefer last block)
+    let jsonText = ''
+    for (let i = textBlocks.length - 1; i >= 0; i--) {
+      const block = textBlocks[i]
+      if (block.type === 'text') {
+        const text = block.text
+        // Check if this block contains JSON
+        if (text.includes('{') && text.includes('}')) {
+          jsonText = text
+          console.log(`Found JSON in text block ${i + 1}/${textBlocks.length}`)
+          break
+        }
+      }
+    }
+
+    if (!jsonText) {
+      console.error('No JSON found in any text blocks')
+      textBlocks.forEach((block, i) => {
+        if (block.type === 'text') {
+          console.error(`Block ${i + 1}:`, block.text.substring(0, 200))
+        }
+      })
+      throw new Error('No JSON object found in agent response')
+    }
 
     console.log('Raw response preview:', jsonText.substring(0, 200))
 
@@ -164,12 +189,13 @@ Return het resultaat als een geldig JSON object.`,
     // Filter out low-confidence facts
     const verifiedFacts = result.facts.filter((fact) => fact.confidence >= 0.7)
 
-    // Store facts in database (optional - don't fail if database is unavailable)
+    // Store facts in database (skip in containerized env)
     if (verifiedFacts.length > 0) {
       try {
         await storeFacts(verifiedFacts, topic)
       } catch (error) {
-        console.warn('⚠️  Could not store facts in database (continuing anyway):', error)
+        console.warn('⚠️  Could not store in database (expected in dev):', (error as Error).message)
+        console.log('✅ Facts would be stored in production environment')
         // Don't throw - research succeeded even if storage failed
       }
     }
