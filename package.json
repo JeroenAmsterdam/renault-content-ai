@@ -13,6 +13,8 @@
     "test:writer": "tsx scripts/test-writer.ts",
     "test:writer:mock": "tsx scripts/test-writer-mock.ts",
     "test:compliance": "tsx scripts/test-compliance.ts",
+    "test:orchestrator": "tsx scripts/test-orchestrator.ts",
+    "test:full-workflow": "tsx scripts/test-orchestrator.ts",
     "test:chain": "tsx scripts/test-validator.ts",
     "test:pipeline": "tsx scripts/test-compliance.ts",
     "test:full": "tsx scripts/test-writer.ts"

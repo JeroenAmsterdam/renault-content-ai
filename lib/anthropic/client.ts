@@ -72,7 +72,7 @@ export async function createMessage(params: Anthropic.MessageCreateParams) {
       console.error('Anthropic API Error:', {
         status: error.status,
         message: error.message,
-        type: error.type,
+        type: (error as any).type || 'unknown',
       })
     }
     throw error
