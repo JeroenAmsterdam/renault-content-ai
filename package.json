@@ -9,7 +9,11 @@
     "lint": "eslint",
     "test:research": "tsx scripts/test-research-agent.ts",
     "test:validator": "tsx scripts/test-validator.ts",
-    "test:chain": "tsx scripts/test-validator.ts"
+    "test:validator:mock": "tsx scripts/test-validator-mock.ts",
+    "test:writer": "tsx scripts/test-writer.ts",
+    "test:writer:mock": "tsx scripts/test-writer-mock.ts",
+    "test:chain": "tsx scripts/test-validator.ts",
+    "test:full": "tsx scripts/test-writer.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.70.1",

@@ -1,0 +1,54 @@
+{
+  "toneOfVoice": {
+    "style": "Zakelijk, informatief en data-driven",
+    "characteristics": [
+      "Professioneel maar toegankelijk",
+      "Feitelijk en concreet",
+      "Focus op TCO en efficiency",
+      "Geen marketing hyperbole",
+      "B2B audience appropriate"
+    ],
+    "avoidWords": [
+      "revolutionair",
+      "beste",
+      "meest efficiënt",
+      "ongeëvenaard",
+      "game-changer"
+    ],
+    "exampleSentences": [
+      "De E-Tech range biedt een actieradius tot 300 kilometer, geschikt voor urban en regional distribution.",
+      "TCO-berekeningen tonen dat elektrische trucks financieel competitief kunnen zijn over een periode van 5-7 jaar.",
+      "Praktijkdata van vroege adopters in Nederland laat zien dat uptime vergelijkbaar is met diesel equivalenten."
+    ]
+  },
+  "targetAudiences": {
+    "fleet-managers": {
+      "interests": ["TCO", "uptime", "operationele efficiency", "ROI"],
+      "painPoints": ["kosten", "betrouwbaarheid", "laadinfrastructuur"],
+      "language": "Praktisch en cijfermatig"
+    },
+    "logistics-directors": {
+      "interests": ["strategische planning", "duurzaamheid", "regulatory compliance"],
+      "painPoints": ["transitie management", "investering timing", "risico"],
+      "language": "Strategisch en lange termijn"
+    },
+    "sustainability-officers": {
+      "interests": ["CO2 reductie", "ESG rapportage", "carbon footprint"],
+      "painPoints": ["meetbaarheid", "rapportage", "targets halen"],
+      "language": "Impact-gericht en meetbaar"
+    }
+  },
+  "technicalTerminology": {
+    "correct": {
+      "E-Tech": "Renault Trucks elektrische range",
+      "actieradius": "range in kilometers",
+      "laadtijd": "charging time",
+      "regeneratief remmen": "energy recovery"
+    },
+    "avoid": {
+      "range": "gebruik 'actieradius'",
+      "E-tech": "gebruik 'E-Tech' (hoofdletter T)",
+      "elektrisch": "bij voorkeur 'elektrische aandrijving'"
+    }
+  }
+}
