@@ -151,8 +151,8 @@ export async function getArticleFull(id: string) {
 export async function createArticle(article: ArticleInsert) {
   const admin = getSupabaseAdmin()
 
-  const { data, error } = await admin
-    .from('articles')
+  const { data, error } = await (admin
+    .from('articles') as any)
     .insert(article)
     .select()
     .single()
@@ -167,8 +167,8 @@ export async function createArticle(article: ArticleInsert) {
 export async function updateArticle(id: string, updates: ArticleUpdate) {
   const admin = getSupabaseAdmin()
 
-  const { data, error } = await admin
-    .from('articles')
+  const { data, error } = await (admin
+    .from('articles') as any)
     .update(updates)
     .eq('id', id)
     .select()
@@ -293,8 +293,8 @@ export async function getSocialVariantByPlatform(
 export async function createSocialVariant(variant: SocialVariantInsert) {
   const admin = getSupabaseAdmin()
 
-  const { data, error } = await admin
-    .from('social_variants')
+  const { data, error } = await (admin
+    .from('social_variants') as any)
     .insert(variant)
     .select()
     .single()
@@ -355,8 +355,8 @@ export async function getLatestComplianceLog(articleId: string) {
 export async function createComplianceLog(log: ComplianceLogInsert) {
   const admin = getSupabaseAdmin()
 
-  const { data, error } = await admin
-    .from('compliance_logs')
+  const { data, error } = await (admin
+    .from('compliance_logs') as any)
     .insert(log)
     .select()
     .single()

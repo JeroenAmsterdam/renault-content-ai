@@ -270,8 +270,8 @@ async function saveArticle(data: any) {
     const supabaseAdmin = getSupabaseAdmin()
 
     // Save article to database
-    const { data: article, error } = await supabaseAdmin
-      .from('articles')
+    const { data: article, error } = await (supabaseAdmin
+      .from('articles') as any)
       .insert({
         title: data.article.title,
         content: data.article.content,
@@ -289,7 +289,7 @@ async function saveArticle(data: any) {
           },
           metaDescription: data.article.metaDescription,
           internalLinkSuggestions: data.article.internalLinkSuggestions,
-        },
+        } as any, // Type assertion for Supabase JSONB field
       })
       .select()
       .single()
