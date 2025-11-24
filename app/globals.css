@@ -8,3 +8,69 @@
     --accent: 227 2 27;
   }
 }
+
+/* Prose styles for article content */
+.prose {
+  color: #1f2937;
+}
+
+.prose h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #000000;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.prose h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #000000;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.prose h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #000000;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.prose p {
+  margin-bottom: 1rem;
+  line-height: 1.75;
+}
+
+.prose ul,
+.prose ol {
+  margin-bottom: 1rem;
+  margin-left: 1.5rem;
+}
+
+.prose li {
+  margin-bottom: 0.5rem;
+}
+
+.prose strong {
+  font-weight: 600;
+  color: #000000;
+}
+
+.prose a {
+  color: #0000FF;
+  text-decoration: none;
+}
+
+.prose a:hover {
+  text-decoration: underline;
+}
+
+.prose blockquote {
+  border-left: 4px solid #0000FF;
+  padding-left: 1rem;
+  font-style: italic;
+  color: #374151;
+  margin: 1rem 0;
+}
