@@ -23,6 +23,7 @@ export default function CreatePage() {
   const [topic, setTopic] = useState('')
   const [audience, setAudience] = useState('fleet-managers')
   const [keywords, setKeywords] = useState('')
+  const [sources, setSources] = useState('')
   const [currentStep, setCurrentStep] = useState('')
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState('')
@@ -56,7 +57,8 @@ export default function CreatePage() {
       const result = await createArticle({
         topic,
         targetAudience: audience,
-        keywords: keywords.split(',').map(k => k.trim()).filter(Boolean)
+        keywords: keywords.split(',').map(k => k.trim()).filter(Boolean),
+        sources: sources.split('\n').map(s => s.trim()).filter(Boolean)
       })
 
       clearInterval(progressInterval)
@@ -134,6 +136,26 @@ export default function CreatePage() {
               />
               <p className="text-sm text-gray-500">
                 Meerdere keywords scheiden met komma's
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="sources">
+                Bronnen (optioneel)
+                <span className="text-sm text-gray-500 font-normal ml-2">
+                  URLs van betrouwbare bronnen
+                </span>
+              </Label>
+              <textarea
+                id="sources"
+                className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="https://renault-trucks.nl/artikel-1&#10;https://example.com/article-2&#10;&#10;Één URL per regel"
+                value={sources}
+                onChange={(e) => setSources(e.target.value)}
+              />
+              <p className="text-sm text-gray-500">
+                Voeg URLs toe van artikelen, specs, of documentatie.
+                Deze bronnen krijgen prioriteit bij fact extraction.
               </p>
             </div>
 
