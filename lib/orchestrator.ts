@@ -334,7 +334,7 @@ async function saveArticle(data: any) {
     content: data.article.content,
     topic: data.request.topic,
     target_audience: data.request.targetAudience,
-    status: data.qualityWarnings?.length > 0 ? 'needs_review' : 'approved',
+    status: 'draft', // Use 'draft' to match database constraint
     word_count: data.article.wordCount,
     created_by: data.userId || 'system',
     metadata: {
