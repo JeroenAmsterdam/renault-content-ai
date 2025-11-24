@@ -113,6 +113,37 @@ class WorkflowLogger {
 }
 
 /**
+ * Retry helper for handling rate limits
+ *
+ * @param fn - Function to execute with retry logic
+ * @param maxRetries - Maximum number of retries (default: 2)
+ * @returns Promise with the result of the function
+ */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 2
+): Promise<T> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn()
+    } catch (error: any) {
+      const isRateLimit =
+        error.message?.includes('rate_limit') ||
+        error.message?.includes('429') ||
+        error.status === 429
+
+      if (isRateLimit && i < maxRetries - 1) {
+        console.log(`⏱️  Rate limit hit, waiting 60 seconds... (attempt ${i + 1}/${maxRetries})`)
+        await new Promise(resolve => setTimeout(resolve, 60000))
+        continue
+      }
+      throw error
+    }
+  }
+  throw new Error('Max retries exceeded')
+}
+
+/**
  * Create Content - Main orchestrator function
  *
  * Runs complete workflow with error handling and progress tracking
@@ -131,10 +162,12 @@ export async function createContent(
   try {
     // STEP 1: Research (30-60s)
     logger.startStep('Research')
-    const research = await runResearchAgent(
-      request.topic,
-      request.keywords || [],
-      request.sources || []
+    const research = await withRetry(() =>
+      runResearchAgent(
+        request.topic,
+        request.keywords || [],
+        request.sources || []
+      )
     )
     logger.completeStep('Research', {
       factsFound: research.facts.length,

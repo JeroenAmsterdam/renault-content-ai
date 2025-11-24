@@ -20,57 +20,25 @@ import type { ResearchResult, Fact } from '@/types/agent-types'
  * System prompt for the Research Agent
  * Defines strict rules for fact verification and confidence scoring
  */
-const RESEARCH_AGENT_PROMPT = `Je bent een fact-gathering researcher voor Renault Trucks Nederland.
+const RESEARCH_AGENT_PROMPT = `Fact-gathering researcher voor Renault Trucks NL.
 
-STRIKTE REGELS:
-1. Verzamel ALLEEN verifieerbare feiten
-2. Elke claim MOET een concrete bron hebben
-3. Prioriteer deze bronnen (in volgorde):
-   - renault-trucks.com (officiële website)
-   - renault-trucks.nl (Nederlandse site)
-   - Officiële persberichten van Renault Trucks
-   - Technische specificatie sheets
-4. Markeer twijfelachtige info als [NEEDS_VERIFICATION]
-5. VERZIN NOOIT specificaties, cijfers of claims
-6. Bij twijfel: niet includeren
+REGELS:
+1. Alleen verifieerbare feiten met bron
+2. Prioriteer: renault-trucks.com/nl, officiële persberichten
+3. Nooit specificaties verzinnen
+4. Bij twijfel: niet includeren
 
-CONFIDENCE SCORING:
-- 0.95-1.0: Directe quote uit officiële Renault documentatie
-- 0.85-0.94: Info van officiële Renault website
-- 0.75-0.84: Info van betrouwbare automotive media met Renault bron
-- 0.70-0.74: Info van betrouwbare media zonder directe Renault bron
-- <0.70: Markeer als [NEEDS_VERIFICATION]
+CONFIDENCE: 0.95+ officieel, 0.85+ Renault site, 0.70+ media
+CATEGORIEËN: technical, specification, marketing, general
 
-CATEGORIEËN:
-- technical: Technische specificaties (motor, vermogen, batterij, etc.)
-- specification: Product specificaties (gewicht, afmetingen, capaciteit)
-- marketing: Marketing claims (milieuvriendelijk, kostenbesparend, etc.)
-- general: Algemene informatie (bedrijfsinfo, marktpositie, etc.)
-
-OUTPUT FORMAT:
-Return een JSON object met deze structuur:
+OUTPUT JSON:
 {
-  "facts": [
-    {
-      "claim": "Concrete, verifieerbare claim",
-      "source": "Naam van de bron",
-      "sourceUrl": "Volledige URL",
-      "confidence": 0.95,
-      "category": "technical"
-    }
-  ],
-  "needsVerification": [
-    "Claims die interessant zijn maar niet geverifieerd konden worden"
-  ],
-  "summary": "Korte samenvatting van wat je hebt gevonden (2-3 zinnen)"
+  "facts": [{"claim": "...", "source": "...", "sourceUrl": "...", "confidence": 0.95, "category": "technical"}],
+  "needsVerification": [],
+  "summary": "..."
 }
 
-BELANGRIJK:
-- Minimaal 3 facts vinden (tenzij echt geen betrouwbare info beschikbaar is)
-- Maximaal 15 facts (focus op kwaliteit, niet kwantiteit)
-- Elk fact MOET een sourceUrl hebben
-- Gebruik ALLEEN Nederlandse bronnen voor Nederlandse site
-- Geef voorkeur aan recente informatie (laatste 2 jaar)
+3-15 facts, elk met sourceUrl, Nederlandse bronnen, recente info.
 `
 
 /**
@@ -125,12 +93,13 @@ Geef feiten uit deze bronnen extra voorkeur.`
     // Call Claude with web search tool
     const response = await anthropic.messages.create({
       model: MODEL,
-      max_tokens: 4000,
+      max_tokens: 2500, // Reduced from 4000 to optimize token usage
       temperature: 0.3, // Lower temp for more factual output
       tools: [
         {
           type: 'web_search_20250305' as const,
           name: 'web_search',
+          max_uses: 2, // Limit to 2 searches to reduce token usage
         },
       ],
       messages: [
