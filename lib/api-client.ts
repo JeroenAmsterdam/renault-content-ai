@@ -10,6 +10,7 @@ export async function createArticle(data: {
   targetAudience: string
   keywords?: string[]
   desiredWordCount?: number
+  sources?: string[]
 }) {
   const response = await fetch('/api/content/create', {
     method: 'POST',
