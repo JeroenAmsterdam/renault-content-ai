@@ -31,6 +31,7 @@ export interface ContentRequest {
   keywords?: string[]
   desiredWordCount?: number
   userId?: string
+  sources?: string[]
 }
 
 export interface WorkflowStep {
@@ -129,7 +130,8 @@ export async function createContent(
     logger.startStep('Research')
     const research = await runResearchAgent(
       request.topic,
-      request.keywords || []
+      request.keywords || [],
+      request.sources || []
     )
     logger.completeStep('Research', {
       factsFound: research.facts.length,

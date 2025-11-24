@@ -16,6 +16,12 @@ export interface Fact {
   category: 'technical' | 'marketing' | 'general' | 'specification'
 }
 
+export interface ResearchInput {
+  topic: string
+  keywords: string[]
+  sources?: string[]
+}
+
 export interface ResearchResult {
   facts: Fact[]
   needsVerification: string[]
