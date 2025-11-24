@@ -26,6 +26,7 @@ async function getArticle(id: string) {
 function getStatusColor(status: string) {
   switch (status) {
     case 'approved': return 'bg-green-100 text-green-800'
+    case 'needs_review': return 'bg-yellow-100 text-yellow-800'
     case 'draft': return 'bg-gray-100 text-gray-800'
     case 'compliance_check': return 'bg-blue-100 text-blue-800'
     default: return 'bg-gray-100 text-gray-800'
@@ -94,6 +95,30 @@ export default async function ArticlePage({
             <CardContent className="pt-4">
               <p className="text-sm text-gray-700">
                 <strong>Meta Description:</strong> {metadata.metaDescription}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Quality Warnings */}
+        {metadata.qualityWarnings && metadata.qualityWarnings.length > 0 && (
+          <Card className="bg-yellow-50 border-yellow-200 mt-4">
+            <CardHeader>
+              <CardTitle className="text-yellow-800 flex items-center gap-2">
+                <span className="text-xl">⚠️</span>
+                Quality Warnings
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {metadata.qualityWarnings.map((warning: string, i: number) => (
+                  <li key={i} className="text-sm text-yellow-900">
+                    {warning}
+                  </li>
+                ))}
+              </ul>
+              <p className="text-sm text-yellow-800 mt-4">
+                💡 Review these issues before publishing. You may want to regenerate with additional sources.
               </p>
             </CardContent>
           </Card>

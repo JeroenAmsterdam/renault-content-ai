@@ -49,6 +49,7 @@ export interface ContentResult {
   articleId?: string
   article?: Article & { id?: string }
   compliance?: ComplianceResult
+  qualityWarnings?: string[]
   error?: string
   errorType?: string
   errorDetails?: any
@@ -125,6 +126,8 @@ export async function createContent(
   console.log(`Topic: ${request.topic}`)
   console.log(`Audience: ${request.targetAudience}`)
 
+  const qualityWarnings: string[] = []
+
   try {
     // STEP 1: Research (30-60s)
     logger.startStep('Research')
@@ -147,13 +150,19 @@ export async function createContent(
       approvalRate: validation.approvalRate,
     })
 
-    // GATE: Minimum 5 approved facts
+    // CHECK: Minimum 5 approved facts (warning, not blocking)
     if (validation.approved.length < 5) {
-      logger.failStep('Validation', 'Insufficient approved facts')
-      throw new InsufficientFactsError(
-        `Only ${validation.approved.length} facts approved`,
-        validation.rejected
+      qualityWarnings.push(
+        `⚠️ Only ${validation.approved.length} verified facts found. Article may lack depth.`
       )
+      console.warn(`⚠️  Low fact count: ${validation.approved.length} facts`)
+    }
+
+    if (validation.approvalRate < 0.6) {
+      qualityWarnings.push(
+        `⚠️ Low fact approval rate (${Math.round(validation.approvalRate * 100)}%). Many sources were rejected.`
+      )
+      console.warn(`⚠️  Low approval rate: ${Math.round(validation.approvalRate * 100)}%`)
     }
 
     // STEP 3: Content Writing (45-90s)
@@ -178,13 +187,20 @@ export async function createContent(
       score: compliance.overallScore,
     })
 
-    // GATE: Must pass compliance
+    // CHECK: Compliance (warning, not blocking)
     if (!compliance.approved) {
-      logger.failStep('Compliance', 'Failed compliance check')
-      throw new ComplianceError(
-        'Article failed compliance check',
-        compliance.issues.filter((i) => i.severity === 'critical')
+      qualityWarnings.push(
+        `⚠️ Compliance check failed (score: ${compliance.overallScore}/100)`
       )
+
+      const criticalIssues = compliance.issues.filter((i) => i.severity === 'critical')
+      if (criticalIssues.length > 0) {
+        qualityWarnings.push(
+          `Critical issues: ${criticalIssues.map((i) => i.description).join(', ')}`
+        )
+      }
+
+      console.warn(`⚠️  Compliance issues: ${criticalIssues.length} critical`)
     }
 
     // STEP 5: Save to Database
@@ -195,6 +211,7 @@ export async function createContent(
       facts: validation.approved,
       userId: request.userId,
       request,
+      qualityWarnings,
     })
     logger.completeStep('Storage', {
       articleId: saved.id,
@@ -203,6 +220,9 @@ export async function createContent(
     // SUCCESS
     console.log('\n✅ Content creation completed successfully!')
     console.log(`Article ID: ${saved.id}`)
+    if (qualityWarnings.length > 0) {
+      console.log(`⚠️  ${qualityWarnings.length} quality warnings`)
+    }
     console.log(`Total time: ${(logger.getWorkflow().totalDuration / 1000).toFixed(1)}s`)
 
     return {
@@ -213,6 +233,7 @@ export async function createContent(
         id: saved.id,
       },
       compliance,
+      qualityWarnings,
       workflow: logger.getWorkflow(),
     }
   } catch (error: any) {
@@ -279,7 +300,7 @@ async function saveArticle(data: any) {
         content: data.article.content,
         topic: data.request.topic,
         target_audience: data.request.targetAudience,
-        status: 'approved',
+        status: data.qualityWarnings?.length > 0 ? 'needs_review' : 'approved',
         word_count: data.article.wordCount,
         created_by: data.userId || 'system',
         metadata: {
@@ -291,6 +312,7 @@ async function saveArticle(data: any) {
           },
           metaDescription: data.article.metaDescription,
           internalLinkSuggestions: data.article.internalLinkSuggestions,
+          qualityWarnings: data.qualityWarnings || [],
         } as any, // Type assertion for Supabase JSONB field
       })
       .select()
@@ -310,6 +332,10 @@ async function saveArticle(data: any) {
     return {
       id: `mock-${Date.now()}`,
       ...data.article,
+      metadata: {
+        ...data.article,
+        qualityWarnings: data.qualityWarnings || [],
+      },
     }
   }
 }

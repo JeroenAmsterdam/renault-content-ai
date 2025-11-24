@@ -78,6 +78,7 @@ BELANGRIJK:
  *
  * @param topic - The main topic to research
  * @param keywords - Additional keywords to refine the search
+ * @param sources - Optional custom URLs to extract facts from
  * @param sources - Optional custom URLs to extract facts from (not implemented yet)
  * @returns ResearchResult with verified facts and metrics
  */
@@ -86,14 +87,36 @@ export async function runResearchAgent(
   keywords: string[] = [],
   sources: string[] = []
 ): Promise<ResearchResult> {
+  console.log(`🔍 Research Agent starting: ${topic}`)
+  console.log(`   Keywords: ${keywords.join(', ')}`)
+  if (sources.length > 0) {
+    console.log(`   Custom sources: ${sources.length} URLs provided`)
+  }
+
   const startTime = Date.now()
 
   try {
+    // Perform web search (will prioritize custom sources if provided)
+    console.log('\n🌐 Performing web search...')
+    if (sources.length > 0) {
+      console.log(`   Prioritizing ${sources.length} custom sources`)
+    }
+
     // Build search query
     const searchQuery = keywords.length > 0
       ? `${topic} ${keywords.join(' ')}`
       : topic
 
+    console.log(`   Search query: "${searchQuery}"`)
+
+    // Build custom sources instruction
+    const sourcesInstruction = sources.length > 0
+      ? `\n\nPRIORITEIT BRONNEN (gebruik deze EERST):
+${sources.map((url, i) => `${i + 1}. ${url}`).join('\n')}
+
+Search deze URLs PRIORITAIR. Gebruik web search om ze te vinden en te analyseren.
+Geef feiten uit deze bronnen extra voorkeur.`
+      : ''
     console.log(`🔍 Research Agent starting: "${searchQuery}"`)
     if (sources.length > 0) {
       console.log(`   Note: ${sources.length} custom sources provided (feature pending)`)
@@ -117,6 +140,7 @@ export async function runResearchAgent(
 
 ONDERWERP: ${topic}
 KEYWORDS: ${keywords.join(', ')}
+${sourcesInstruction}
 
 Zoek gedetailleerde, verifieerbare informatie over dit onderwerp specifiek voor Renault Trucks. Focus op officiële bronnen en technische specificaties.
 
@@ -192,35 +216,78 @@ Return het resultaat als een geldig JSON object.`,
     }
 
     // Filter out low-confidence facts
-    const verifiedFacts = result.facts.filter((fact) => fact.confidence >= 0.7)
+    let facts = result.facts.filter((fact) => fact.confidence >= 0.7)
 
-    // Store facts in database (skip in containerized env)
-    if (verifiedFacts.length > 0) {
+    // Boost confidence for facts from custom sources
+    if (sources.length > 0) {
+      const sourceDomains = sources.map(url => {
+        try {
+          return new URL(url).hostname
+        } catch {
+          return url
+        }
+      })
+
+      facts = facts.map(fact => {
+        const factDomain = fact.sourceUrl ? new URL(fact.sourceUrl).hostname : ''
+        const isFromCustomSource = sourceDomains.some(domain => factDomain.includes(domain))
+
+        if (isFromCustomSource) {
+          console.log(`   ⭐ Boosting confidence for fact from custom source: ${fact.sourceUrl}`)
+          return {
+            ...fact,
+            confidence: Math.min(fact.confidence + 0.1, 0.98)
+          }
+        }
+        return fact
+      })
+    }
+
+    // Remove duplicates
+    const uniqueFacts = deduplicateFacts(facts)
+
+    console.log(`\n✅ Research completed: ${uniqueFacts.length} unique facts found`)
+
+    // Store facts in database
+    if (uniqueFacts.length > 0) {
       try {
-        await storeFacts(verifiedFacts, topic)
-      } catch (error) {
-        console.warn('⚠️  Could not store in database (expected in dev):', (error as Error).message)
-        console.log('✅ Facts would be stored in production environment')
-        // Don't throw - research succeeded even if storage failed
+        await storeFacts(uniqueFacts, topic)
+      } catch (error: any) {
+        console.warn('⚠️  Could not store in database (expected in dev):', error.message)
       }
     }
 
-    const duration = Date.now() - startTime
-
-    console.log(
-      `✅ Research completed: ${verifiedFacts.length} facts found (${duration}ms)`
-    )
-
     return {
-      facts: verifiedFacts,
-      needsVerification: result.needsVerification || [],
-      summary: result.summary || 'No summary provided',
-      duration,
+      facts: uniqueFacts,
+      needsVerification: [],
+      summary: `Found ${uniqueFacts.length} verified facts from ${sources.length > 0 ? 'custom sources and' : ''} web research`,
+      duration: Date.now() - startTime
     }
   } catch (error) {
     console.error('❌ Research Agent error:', error)
     throw error
   }
+}
+
+/**
+ * Remove duplicate facts based on claim text
+ *
+ * @param facts - Array of facts that may contain duplicates
+ * @returns Array of unique facts
+ */
+function deduplicateFacts(facts: Fact[]): Fact[] {
+  const seen = new Set<string>()
+  const unique: Fact[] = []
+
+  for (const fact of facts) {
+    const key = fact.claim.toLowerCase().trim()
+    if (!seen.has(key)) {
+      seen.add(key)
+      unique.push(fact)
+    }
+  }
+
+  return unique
 }
 
 /**
