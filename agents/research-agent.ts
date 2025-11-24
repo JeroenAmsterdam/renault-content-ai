@@ -210,7 +210,7 @@ async function storeFacts(facts: Fact[], topic: string): Promise<void> {
     }))
 
     const { error } = await (supabaseAdmin.from('facts') as any).insert(
-      factsToInsert
+      factsToInsert as any
     )
 
     if (error) {
@@ -294,7 +294,7 @@ function parseResearchResponse(response: any): Fact[] {
 }
 
 /**
- * Extract facts from custom URLs using web_fetch
+ * Extract facts from custom URLs using web_search
  */
 async function extractFromSources(
   urls: string[],
@@ -304,30 +304,32 @@ async function extractFromSources(
 
   for (const url of urls) {
     try {
-      console.log(`  📥 Fetching: ${url}`)
+      console.log(`  📥 Extracting from: ${url}`)
 
-      // Use web_fetch to get content
+      // Use web_search to find content from the specific URL
       const response = await anthropic.messages.create({
         model: MODEL,
         max_tokens: 4000,
         temperature: 0.3,
         tools: [{
-          type: 'web_fetch_20250305' as const,
-          name: 'web_fetch'
+          type: 'web_search_20250305' as const,
+          name: 'web_search'
         }],
         messages: [{
           role: 'user',
-          content: `Fetch and extract facts from this URL: ${url}
+          content: `Extract facts from this specific URL: ${url}
 
-Extract factual information relevant to: ${topic}
+Topic: ${topic}
 
 ${RESEARCH_AGENT_PROMPT}
 
-Focus on extracting:
+Focus on extracting facts about:
 - Technical specifications
 - Concrete data points
 - Verifiable claims
 - Official statements
+
+IMPORTANT: Only extract facts from the URL ${url}, not from other sources.
 
 Output JSON with facts array.`
         }]
