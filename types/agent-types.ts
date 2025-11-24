@@ -24,6 +24,17 @@ export interface ResearchResult {
 }
 
 // ============================================================================
+// VALIDATOR AGENT TYPES
+// ============================================================================
+
+export interface ValidationResult {
+  approved: Fact[]
+  rejected: Array<Fact & { rejectionReason: string }>
+  summary: string
+  approvalRate: number
+}
+
+// ============================================================================
 // AGENT CONFIGURATION
 // ============================================================================
 
@@ -72,23 +83,48 @@ export interface ContentResult {
 // COMPLIANCE CHECK TYPES
 // ============================================================================
 
+export interface ComplianceCheck {
+  passed: boolean
+  score: number
+  issues: string[]
+}
+
 export interface ComplianceIssue {
-  type: 'unverified_claim' | 'missing_source' | 'low_confidence' | 'hallucination_detected'
-  severity: 'low' | 'medium' | 'high' | 'critical'
-  claim?: string
-  message: string
-  line?: number
+  severity: 'critical' | 'warning' | 'info'
+  check: string
+  description: string
+  location: string
   suggestion?: string
 }
 
 export interface ComplianceResult {
-  passed: boolean
+  approved: boolean
   overallScore: number
+  checks: {
+    factVerification: ComplianceCheck
+    toneOfVoice: ComplianceCheck
+    technical: ComplianceCheck
+    completeness: ComplianceCheck
+    seo: ComplianceCheck
+  }
   issues: ComplianceIssue[]
-  checkedClaims: number
-  verifiedClaims: number
-  duration: number
+  recommendations: string[]
 }
+
+// ============================================================================
+// CONTENT WRITER TYPES
+// ============================================================================
+
+export interface Article {
+  title: string
+  metaDescription: string
+  content: string
+  keywords: string[]
+  wordCount: number
+  factsUsed: string[]
+  internalLinkSuggestions: string[]
+}
+
 
 // ============================================================================
 // SOCIAL MEDIA TYPES

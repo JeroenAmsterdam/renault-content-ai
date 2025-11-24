@@ -7,7 +7,17 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:research": "tsx scripts/test-research-agent.ts"
+    "test:research": "tsx scripts/test-research-agent.ts",
+    "test:validator": "tsx scripts/test-validator.ts",
+    "test:validator:mock": "tsx scripts/test-validator-mock.ts",
+    "test:writer": "tsx scripts/test-writer.ts",
+    "test:writer:mock": "tsx scripts/test-writer-mock.ts",
+    "test:compliance": "tsx scripts/test-compliance.ts",
+    "test:orchestrator": "tsx scripts/test-orchestrator.ts",
+    "test:full-workflow": "tsx scripts/test-orchestrator.ts",
+    "test:chain": "tsx scripts/test-validator.ts",
+    "test:pipeline": "tsx scripts/test-compliance.ts",
+    "test:full": "tsx scripts/test-writer.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.70.1",
