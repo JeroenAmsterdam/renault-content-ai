@@ -79,6 +79,7 @@ BELANGRIJK:
  * @param topic - The main topic to research
  * @param keywords - Additional keywords to refine the search
  * @param sources - Optional custom URLs to extract facts from
+ * @param sources - Optional custom URLs to extract facts from (not implemented yet)
  * @returns ResearchResult with verified facts and metrics
  */
 export async function runResearchAgent(
@@ -116,6 +117,10 @@ ${sources.map((url, i) => `${i + 1}. ${url}`).join('\n')}
 Search deze URLs PRIORITAIR. Gebruik web search om ze te vinden en te analyseren.
 Geef feiten uit deze bronnen extra voorkeur.`
       : ''
+    console.log(`🔍 Research Agent starting: "${searchQuery}"`)
+    if (sources.length > 0) {
+      console.log(`   Note: ${sources.length} custom sources provided (feature pending)`)
+    }
 
     // Call Claude with web search tool
     const response = await anthropic.messages.create({
