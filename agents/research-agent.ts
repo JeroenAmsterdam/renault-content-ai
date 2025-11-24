@@ -78,11 +78,13 @@ BELANGRIJK:
  *
  * @param topic - The main topic to research
  * @param keywords - Additional keywords to refine the search
+ * @param sources - Optional custom URLs to extract facts from (not implemented yet)
  * @returns ResearchResult with verified facts and metrics
  */
 export async function runResearchAgent(
   topic: string,
-  keywords: string[] = []
+  keywords: string[] = [],
+  sources: string[] = []
 ): Promise<ResearchResult> {
   const startTime = Date.now()
 
@@ -93,6 +95,9 @@ export async function runResearchAgent(
       : topic
 
     console.log(`🔍 Research Agent starting: "${searchQuery}"`)
+    if (sources.length > 0) {
+      console.log(`   Note: ${sources.length} custom sources provided (feature pending)`)
+    }
 
     // Call Claude with web search tool
     const response = await anthropic.messages.create({
