@@ -322,53 +322,67 @@ export async function createContent(
  * Save article to database
  */
 async function saveArticle(data: any) {
+  console.log('🔍 === SAVE ARTICLE DEBUG ===')
+  console.log('Environment check:')
+  console.log('- NODE_ENV:', process.env.NODE_ENV)
+  console.log('- SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...')
+  console.log('- SERVICE_ROLE_KEY exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
+
+  console.log('\n📦 Data to insert:')
+  const insertData = {
+    title: data.article.title,
+    content: data.article.content,
+    topic: data.request.topic,
+    target_audience: data.request.targetAudience,
+    status: data.qualityWarnings?.length > 0 ? 'needs_review' : 'approved',
+    word_count: data.article.wordCount,
+    created_by: data.userId || 'system',
+    metadata: {
+      keywords: data.article.keywords,
+      factsUsed: data.article.factsUsed,
+      compliance: {
+        score: data.compliance.overallScore,
+        checks: data.compliance.checks,
+      },
+      metaDescription: data.article.metaDescription,
+      internalLinkSuggestions: data.article.internalLinkSuggestions,
+      qualityWarnings: data.qualityWarnings || [],
+    },
+  }
+
+  console.log('Insert data:', JSON.stringify(insertData, null, 2))
+
   try {
+    console.log('\n💾 Attempting Supabase insert...')
     const supabaseAdmin = getSupabaseAdmin()
 
-    // Save article to database
     const { data: article, error } = await (supabaseAdmin
       .from('articles') as any)
-      .insert({
-        title: data.article.title,
-        content: data.article.content,
-        topic: data.request.topic,
-        target_audience: data.request.targetAudience,
-        status: data.qualityWarnings?.length > 0 ? 'needs_review' : 'approved',
-        word_count: data.article.wordCount,
-        created_by: data.userId || 'system',
-        metadata: {
-          keywords: data.article.keywords,
-          factsUsed: data.article.factsUsed,
-          compliance: {
-            score: data.compliance.overallScore,
-            checks: data.compliance.checks,
-          },
-          metaDescription: data.article.metaDescription,
-          internalLinkSuggestions: data.article.internalLinkSuggestions,
-          qualityWarnings: data.qualityWarnings || [],
-        } as any, // Type assertion for Supabase JSONB field
-      })
+      .insert(insertData)
       .select()
       .single()
 
-    if (error) throw error
-
-    console.log('💾 Article saved to database')
-
-    return article
-  } catch (error) {
-    console.warn(
-      '⚠️  Could not save to database (expected in dev):',
-      (error as Error).message
-    )
-    // Return mock ID in development
-    return {
-      id: `mock-${Date.now()}`,
-      ...data.article,
-      metadata: {
-        ...data.article,
-        qualityWarnings: data.qualityWarnings || [],
-      },
+    if (error) {
+      console.error('❌ SUPABASE ERROR:')
+      console.error('Message:', error.message)
+      console.error('Details:', error.details)
+      console.error('Hint:', error.hint)
+      console.error('Code:', error.code)
+      console.error('Full error:', JSON.stringify(error, null, 2))
+      throw error
     }
+
+    console.log('✅ SUCCESS! Article saved:', article.id)
+    console.log('Article data:', JSON.stringify(article, null, 2))
+    return article
+
+  } catch (error: any) {
+    console.error('💥 EXCEPTION in saveArticle:')
+    console.error('Error name:', error.name)
+    console.error('Error message:', error.message)
+    console.error('Error stack:', error.stack)
+
+    // Still throw to see full error in response
+    throw error
   }
 }
