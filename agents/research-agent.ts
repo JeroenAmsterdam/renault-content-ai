@@ -225,6 +225,8 @@ Return het resultaat als een geldig JSON object.`,
  * @param topic - The topic these facts relate to
  */
 async function storeFacts(facts: Fact[], topic: string): Promise<void> {
+  if (facts.length === 0) return
+
   try {
     const supabaseAdmin = getSupabaseAdmin()
 
@@ -238,27 +240,25 @@ async function storeFacts(facts: Fact[], topic: string): Promise<void> {
       metadata: {
         topic,
         discovered_at: new Date().toISOString(),
-        agent_version: 'research_agent_v1',
-      } as any, // Type assertion for Supabase JSONB field
+      },
     }))
 
-    const { error } = await (supabaseAdmin.from('facts') as any).insert(
-      factsToInsert
-    )
+    const { error } = await supabaseAdmin
+      .from('facts')
+      .insert(factsToInsert as any) // Type assertion for Supabase insert
 
     if (error) {
       console.warn('⚠️  Could not store facts in database:', error.message)
-      // Don't throw - storage is optional
-      return
+      console.log('   Facts will be available in article metadata')
+    } else {
+      console.log(`💾 Stored ${facts.length} facts in database`)
     }
-
-    console.log(`💾 Stored ${facts.length} facts in database`)
   } catch (error: any) {
     console.warn(
-      '⚠️  Database storage skipped (expected in dev):',
+      '⚠️  Database storage skipped (expected in containerized dev):',
       error.message
     )
-    // Don't throw - graceful degradation
+    console.log('✅ Facts are still available for content creation')
   }
 }
 
