@@ -1,25 +1,23 @@
-import type { Metadata } from "next";
-import "./globals.css";
-
-// Note: Using system fonts due to environment restrictions
-// In production, consider using next/font/local with Inter font files
-// or enable Google Fonts if network allows
+import type { Metadata } from 'next'
+import './globals.css'
 
 export const metadata: Metadata = {
-  title: "Renault Trucks Content System",
-  description: "Multi-agent content creation system for Renault Trucks",
-};
+  title: 'Renault Trucks Content System',
+  description: 'AI-powered content creation with zero-hallucination enforcement',
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="en">
-      <body className="antialiased font-sans">
-        {children}
+    <html lang="nl">
+      <body className="font-sans antialiased">
+        <div className="min-h-screen bg-gray-50">
+          {children}
+        </div>
       </body>
     </html>
-  );
+  )
 }
