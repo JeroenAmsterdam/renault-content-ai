@@ -9,14 +9,34 @@ import ReactMarkdown from 'react-markdown'
 
 async function getArticle(id: string) {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/articles/${id}`,
-      { cache: 'no-store' }
-    )
-    const data = await response.json()
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://renault-content-ai.vercel.app'
+    const url = `${baseUrl}/api/articles/${id}`
 
-    if (!data.success) return null
+    console.log('Fetching article from:', url)
+
+    const response = await fetch(url, {
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      console.error('API response not OK:', response.status, response.statusText)
+      return null
+    }
+
+    const data = await response.json()
+    console.log('API response:', data)
+
+    if (!data.success) {
+      console.error('API returned error:', data.error)
+      return null
+    }
+
+    console.log('Article loaded successfully:', data.article.id)
     return data.article
+
   } catch (error) {
     console.error('Failed to fetch article:', error)
     return null
