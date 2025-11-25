@@ -24,10 +24,10 @@ export default async function HomePage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-secondary mb-2">
-          Renault Trucks Content System
+          AI Content Platform
         </h1>
         <p className="text-gray-600">
-          AI-powered content creation met zero-hallucination enforcement
+          Enterprise content creation met zero-hallucination
         </p>
       </div>
 
