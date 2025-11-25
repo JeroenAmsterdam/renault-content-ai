@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { PlusIcon, FileTextIcon, CheckCircle2Icon, DatabaseIcon } from 'lucide-react'
+import { PlusIcon, FileTextIcon } from 'lucide-react'
 import { Header } from '@/components/header'
 
 async function getStats() {
@@ -21,142 +21,151 @@ export default async function HomePage() {
   const stats = await getStats()
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <Header />
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Artikelen deze maand
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-primary">
-              {stats?.articlesThisMonth || 0}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Totaal artikelen
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-secondary">
-              {stats?.totalArticles || 0}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Compliance Score
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-green-600">
-              {stats?.avgComplianceScore || 0}%
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Facts Geverifieerd
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-accent">
-              {stats?.factsVerified || 0}
-            </div>
-          </CardContent>
-        </Card>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Animated gradient background */}
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-orange-300 via-pink-300 via-purple-300 to-yellow-200 animate-gradient-slow">
+        <div className="absolute inset-0 bg-gradient-to-tl from-pink-400/30 via-purple-400/30 to-orange-300/30 animate-gradient-reverse"></div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="flex gap-4 mb-8">
-        <Link href="/create">
-          <Button size="lg" className="bg-primary hover:bg-primary-dark text-white">
-            <PlusIcon className="mr-2 h-5 w-5" />
-            Nieuw Artikel
-          </Button>
-        </Link>
-        <Link href="/articles">
-          <Button size="lg" variant="outline">
-            <FileTextIcon className="mr-2 h-5 w-5" />
-            Alle Artikelen
-          </Button>
-        </Link>
+      {/* Rest of content */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <Header />
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-0">
+            <CardHeader className="pb-2">
+              <CardDescription>Artikelen deze maand</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold text-blue-600">
+                {stats?.articlesThisMonth || 0}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-0">
+            <CardHeader className="pb-2">
+              <CardDescription>Totaal artikelen</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold text-secondary">
+                {stats?.totalArticles || 0}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-0">
+            <CardHeader className="pb-2">
+              <CardDescription>Compliance Score</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold text-green-600">
+                {stats?.avgComplianceScore || 0}%
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-0">
+            <CardHeader className="pb-2">
+              <CardDescription>Facts Geverifieerd</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold text-red-600">
+                {stats?.factsVerified || 0}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="flex gap-4 mb-8">
+          <Link href="/create">
+            <Button size="lg" className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-bold shadow-lg">
+              <PlusIcon className="mr-2 h-5 w-5" />
+              Nieuw Artikel
+            </Button>
+          </Link>
+          <Link href="/articles">
+            <Button size="lg" variant="outline" className="bg-white/90 hover:bg-white border-2 border-orange-300">
+              <FileTextIcon className="mr-2 h-5 w-5" />
+              Alle Artikelen
+            </Button>
+          </Link>
+        </div>
+
+        {/* Info Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-0 hover:shadow-3xl transition-shadow duration-300">
+            <CardHeader>
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mb-4">
+                <span className="text-2xl text-white">✓</span>
+              </div>
+              <CardTitle>Zero-Hallucination</CardTitle>
+              <CardDescription>
+                4-laags verificatie systeem
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li>✓ Source verification</li>
+                <li>✓ Fact validation</li>
+                <li>✓ Content compliance</li>
+                <li>✓ Final quality gate</li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-0 hover:shadow-3xl transition-shadow duration-300">
+            <CardHeader>
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center mb-4">
+                <span className="text-2xl text-white">📝</span>
+              </div>
+              <CardTitle>Content Creation</CardTitle>
+              <CardDescription>
+                B2B geoptimaliseerd
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li>✓ SEO optimization</li>
+                <li>✓ Multi-audience targeting</li>
+                <li>✓ Brand compliance</li>
+                <li>✓ Complete traceability</li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-0 hover:shadow-3xl transition-shadow duration-300">
+            <CardHeader>
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-400 to-pink-500 flex items-center justify-center mb-4">
+                <span className="text-2xl text-white">🗄️</span>
+              </div>
+              <CardTitle>Enterprise Ready</CardTitle>
+              <CardDescription>
+                Production deployment
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li>✓ Vercel hosting</li>
+                <li>✓ Supabase database</li>
+                <li>✓ API integration</li>
+                <li>✓ Workflow tracking</li>
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Footer */}
+        <footer className="mt-16 text-center py-8">
+          <div className="text-white/90 drop-shadow-md">
+            <p className="text-lg font-medium">Powered by <strong>Lebowski Labs</strong></p>
+            <p className="text-sm mt-2">The Dude abides. ✌️🥃</p>
+          </div>
+        </footer>
       </div>
-
-      {/* Info Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <CheckCircle2Icon className="h-8 w-8 text-green-600 mb-2" />
-            <CardTitle>Zero-Hallucination</CardTitle>
-            <CardDescription>
-              4-laags verificatie systeem
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>✓ Source verification</li>
-              <li>✓ Fact validation</li>
-              <li>✓ Content compliance</li>
-              <li>✓ Final quality gate</li>
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <FileTextIcon className="h-8 w-8 text-primary mb-2" />
-            <CardTitle>Content Creation</CardTitle>
-            <CardDescription>
-              B2B geoptimaliseerd
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>✓ SEO optimization</li>
-              <li>✓ Multi-audience targeting</li>
-              <li>✓ Brand compliance</li>
-              <li>✓ Complete traceability</li>
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <DatabaseIcon className="h-8 w-8 text-accent mb-2" />
-            <CardTitle>Enterprise Ready</CardTitle>
-            <CardDescription>
-              Production deployment
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>✓ Vercel hosting</li>
-              <li>✓ Supabase database</li>
-              <li>✓ API integration</li>
-              <li>✓ Workflow tracking</li>
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Footer */}
-      <footer className="mt-16 text-center text-sm text-gray-500">
-        <p>Powered by <strong>Lebowski Labs</strong></p>
-      </footer>
     </div>
   )
 }
