@@ -27,7 +27,7 @@ export default async function HomePage() {
           Lebowski Labs
         </h1>
         <p className="text-gray-600">
-          AI Content Platform voor Marketing Bureaus
+          I had a rough day, and I hate the f*cking Eagles
         </p>
       </div>
 
