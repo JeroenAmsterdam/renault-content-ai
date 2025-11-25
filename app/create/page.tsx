@@ -24,6 +24,7 @@ export default function CreatePage() {
   const [audience, setAudience] = useState('fleet-managers')
   const [keywords, setKeywords] = useState('')
   const [sources, setSources] = useState('')
+  const [briefing, setBriefing] = useState('')
   const [currentStep, setCurrentStep] = useState('')
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState('')
@@ -58,7 +59,8 @@ export default function CreatePage() {
         topic,
         targetAudience: audience,
         keywords: keywords.split(',').map(k => k.trim()).filter(Boolean),
-        sources: sources.split('\n').map(s => s.trim()).filter(Boolean)
+        sources: sources.split('\n').map(s => s.trim()).filter(Boolean),
+        briefing: briefing.trim() || undefined
       })
 
       clearInterval(progressInterval)
@@ -156,6 +158,25 @@ export default function CreatePage() {
               <p className="text-sm text-gray-500">
                 Voeg URLs toe van artikelen, specs, of documentatie.
                 Deze bronnen krijgen prioriteit bij fact extraction.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="briefing">
+                Briefing (optioneel)
+                <span className="text-sm text-gray-500 font-normal ml-2">
+                  Geef context, insteek, doel of quotes
+                </span>
+              </Label>
+              <textarea
+                id="briefing"
+                className="flex min-h-[150px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Bijvoorbeeld:&#10;&#10;• Focus op TCO voordelen voor MKB&#10;• Interview quote van Jan de Vries (Fleet Manager): 'We besparen 20% op brandstof'&#10;• Doel: Overtuigen van switch naar elektrisch&#10;• Insteek: Praktische tips, geen theory"
+                value={briefing}
+                onChange={(e) => setBriefing(e.target.value)}
+              />
+              <p className="text-sm text-gray-500">
+                💡 Hoe specifieker je briefing, hoe beter het artikel aansluit op je doel
               </p>
             </div>
 
