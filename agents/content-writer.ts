@@ -83,6 +83,7 @@ export interface WriterInput {
   targetAudience: string
   keywords?: string[]
   desiredWordCount?: number
+  briefing?: string
 }
 
 /**
@@ -98,6 +99,7 @@ export async function runContentWriter(input: WriterInput): Promise<Article> {
     targetAudience,
     keywords = [],
     desiredWordCount = 700,
+    briefing,
   } = input
 
   console.log(`✍️  Content Writer starting...`)
@@ -126,7 +128,18 @@ export async function runContentWriter(input: WriterInput): Promise<Article> {
         {
           role: 'user',
           content: `${WRITER_PROMPT}
+${briefing ? `
 
+BRIEFING FROM CLIENT:
+${briefing}
+
+IMPORTANT: Use this briefing as your PRIMARY GUIDANCE.
+- Follow the suggested angle/approach
+- Include any quotes provided
+- Address the stated goals
+- Match the requested focus/tone
+
+` : ''}
 BRAND GUIDELINES:
 ${JSON.stringify(brandGuidelines.toneOfVoice, null, 2)}
 

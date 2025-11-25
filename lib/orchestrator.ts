@@ -32,6 +32,7 @@ export interface ContentRequest {
   desiredWordCount?: number
   userId?: string
   sources?: string[]
+  briefing?: string
 }
 
 export interface WorkflowStep {
@@ -206,6 +207,7 @@ export async function createContent(
       targetAudience: request.targetAudience,
       keywords: request.keywords,
       desiredWordCount: request.desiredWordCount,
+      briefing: request.briefing,
     })
     logger.completeStep('Writing', {
       wordCount: article.wordCount,
