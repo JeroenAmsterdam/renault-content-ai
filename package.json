@@ -1,6 +1,7 @@
 {
-  "name": "renault-content-ai",
+  "name": "lebowski-labs-content-platform",
   "version": "0.1.0",
+  "description": "Multi-client AI content creation platform",
   "private": true,
   "scripts": {
     "dev": "next dev",

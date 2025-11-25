@@ -1,7 +1,7 @@
 /**
  * Brand Knowledge Library
  *
- * Provides access to Renault Trucks brand guidelines and tone-of-voice rules.
+ * Provides access to client-specific brand guidelines and tone-of-voice rules.
  * Used by Content Writer Agent to ensure brand consistency.
  */
 
@@ -15,7 +15,7 @@ export function getBrandGuidelines() {
 }
 
 /**
- * Validate text against Renault Trucks tone-of-voice guidelines
+ * Validate text against client-specific tone-of-voice guidelines
  *
  * @param text - Content to validate
  * @returns Validation result with issues and score

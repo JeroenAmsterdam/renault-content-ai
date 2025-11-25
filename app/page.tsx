@@ -27,7 +27,7 @@ export default async function HomePage() {
           Lebowski Labs
         </h1>
         <p className="text-gray-600">
-          Enterprise content creation met zero-hallucination
+          AI Content Platform voor Marketing Bureaus
         </p>
       </div>
 
@@ -158,6 +158,11 @@ export default async function HomePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Footer */}
+      <footer className="mt-16 text-center text-sm text-gray-500">
+        <p>Powered by <strong>Lebowski Labs</strong></p>
+      </footer>
     </div>
   )
 }
