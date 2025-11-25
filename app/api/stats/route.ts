@@ -1,20 +1,35 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { supabase } from '@/lib/supabase/client'
 
-// GET /api/stats - Dashboard statistics
+// GET /api/stats - Dashboard statistics for the logged-in client
 export async function GET() {
   try {
-    // Count articles by status
+    const cookieStore = await cookies()
+    const clientSession = cookieStore.get('client_session')
+
+    if (!clientSession) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const clientId = clientSession.value
+
+    // Count articles by status for this client
     const { data: articles, error: articlesError } = await supabase
       .from('articles')
       .select('status, created_at')
+      .eq('client_id', clientId)
 
     if (articlesError) throw articlesError
 
-    // Count facts
+    // Count facts for this client
     const { count: factsCount, error: factsError } = await supabase
       .from('facts')
       .select('*', { count: 'exact', head: true })
+      .eq('client_id', clientId)
 
     if (factsError) throw factsError
 

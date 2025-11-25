@@ -33,6 +33,7 @@ export interface ContentRequest {
   userId?: string
   sources?: string[]
   briefing?: string
+  clientId?: string  // Add client_id for multi-tenant support
 }
 
 export interface WorkflowStep {
@@ -339,6 +340,7 @@ async function saveArticle(data: any) {
     status: 'draft', // Use 'draft' to match database constraint
     word_count: data.article.wordCount,
     created_by: data.userId || 'system',
+    client_id: data.request.clientId, // Add client_id for multi-tenant support
     metadata: {
       keywords: data.article.keywords,
       factsUsed: data.article.factsUsed,

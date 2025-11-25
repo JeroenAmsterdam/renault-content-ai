@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { supabase } from '@/lib/supabase/client'
 
 // GET /api/articles/:id - Get single article
@@ -7,12 +8,24 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const cookieStore = await cookies()
+    const clientSession = cookieStore.get('client_session')
+
+    if (!clientSession) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const clientId = clientSession.value
     const { id } = await params
 
     const { data, error } = await supabase
       .from('articles')
       .select('*')
       .eq('id', id)
+      .eq('client_id', clientId)
       .single()
 
     if (error) throw error
@@ -43,6 +56,17 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const cookieStore = await cookies()
+    const clientSession = cookieStore.get('client_session')
+
+    if (!clientSession) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const clientId = clientSession.value
     const { id } = await params
     const body = await request.json()
     const { title, content, status } = body
@@ -56,6 +80,7 @@ export async function PUT(
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
+      .eq('client_id', clientId)
       .select()
       .single()
 
@@ -80,12 +105,24 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const cookieStore = await cookies()
+    const clientSession = cookieStore.get('client_session')
+
+    if (!clientSession) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const clientId = clientSession.value
     const { id } = await params
 
     const { error } = await supabase
       .from('articles')
       .delete()
       .eq('id', id)
+      .eq('client_id', clientId)
 
     if (error) throw error
 
