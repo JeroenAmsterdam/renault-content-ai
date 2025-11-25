@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { Loader2Icon, CheckCircle2Icon, AlertCircleIcon } from 'lucide-react'
@@ -21,7 +21,7 @@ export default function CreatePage() {
   const router = useRouter()
   const [isCreating, setIsCreating] = useState(false)
   const [topic, setTopic] = useState('')
-  const [audience, setAudience] = useState('decision-makers')
+  const [audience, setAudience] = useState('')
   const [keywords, setKeywords] = useState('')
   const [sources, setSources] = useState('')
   const [briefing, setBriefing] = useState('')
@@ -40,6 +40,11 @@ export default function CreatePage() {
   async function handleCreate() {
     if (!topic) {
       setError('Onderwerp is verplicht')
+      return
+    }
+
+    if (!audience) {
+      setError('Doelgroep is verplicht')
       return
     }
 
@@ -115,17 +120,30 @@ export default function CreatePage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="audience">Doelgroep *</Label>
-              <Select value={audience} onValueChange={setAudience}>
-                <SelectTrigger id="audience">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="decision-makers">Beslissers / Management</SelectItem>
-                  <SelectItem value="technical-specialists">Technische Specialisten</SelectItem>
-                  <SelectItem value="business-professionals">Zakelijke Professionals</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="audience">
+                Doelgroep & Tone-of-Voice *
+                <span className="text-sm text-gray-500 font-normal ml-2">
+                  Beschrijf je doelgroep en gewenste aanpak
+                </span>
+              </Label>
+              <Textarea
+                id="audience"
+                value={audience}
+                onChange={(e) => setAudience(e.target.value)}
+                placeholder="Bijvoorbeeld:&#10;&#10;Fleet Managers bij internationale transportbedrijven. Aanspreken met 'je', zakelijke en data-driven toon.&#10;&#10;Of:&#10;&#10;Ouders van basisschool scholieren in Amsterdam Oud-Zuid. Aanspreken met 'u', opwekkende en inspirerende stijl. Focus op veiligheid en community."
+                rows={5}
+                className="resize-none"
+                required
+              />
+              <div className="text-sm text-gray-600 space-y-1">
+                <p className="font-medium">💡 Tips voor beste resultaten:</p>
+                <ul className="text-xs space-y-1 ml-4 list-disc">
+                  <li><strong>Wie:</strong> Functie, industrie, locatie</li>
+                  <li><strong>Aanspreekvorm:</strong> 'je' of 'u'</li>
+                  <li><strong>Toon:</strong> Zakelijk, inspirerend, technisch, toegankelijk</li>
+                  <li><strong>Focus:</strong> Specifieke pijnpunten of interesses</li>
+                </ul>
+              </div>
             </div>
 
             <div className="space-y-2">
