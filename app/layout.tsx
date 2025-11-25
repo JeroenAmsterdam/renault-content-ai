@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Lebowski Labs',
-  description: 'Enterprise content creation met zero-hallucination enforcement',
+  title: 'Lebowski Labs - AI Content Platform',
+  description: 'Enterprise content creation platform met zero-hallucination enforcement',
 }
 
 export default function RootLayout({

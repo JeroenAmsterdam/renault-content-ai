@@ -1,12 +1,12 @@
 /**
  * Content Writer Agent
  *
- * Responsible for creating B2B articles for Renault Trucks Nederland.
+ * Responsible for creating B2B articles with brand-specific tone and style.
  * Uses ONLY approved facts - no hallucination possible.
  *
  * Key responsibilities:
  * - Write 700-word SEO-optimized articles
- * - Follow Renault Trucks tone-of-voice strictly
+ * - Follow client-specific tone-of-voice strictly
  * - Use ONLY approved facts from Validator Agent
  * - Target specific B2B audiences
  * - Generate proper SEO metadata
@@ -16,13 +16,13 @@ import { anthropic, MODEL } from '@/lib/anthropic/client'
 import { getBrandGuidelines, getAudienceProfile } from '@/lib/brand-knowledge'
 import type { Fact } from '@/types/agent-types'
 
-const WRITER_PROMPT = `Je bent een B2B content writer voor Renault Trucks Nederland.
+const WRITER_PROMPT = `Je bent een B2B content writer die werkt met client-specifieke brand guidelines.
 
 STRIKTE CONSTRAINTS:
 1. Gebruik ALLEEN facts uit de approved facts lijst
 2. GEEN creative liberty bij specs, cijfers of claims
 3. Bij ontbrekende informatie: gebruik [PLACEHOLDER: beschrijving]
-4. Volg Renault Trucks tone-of-voice strikt
+4. Volg de client-specifieke tone-of-voice strikt
 5. Target audience bepaalt diepgang en focus
 
 TONE-OF-VOICE:

@@ -37,7 +37,7 @@ export function middleware(request: NextRequest) {
     const auth = authHeader.split(' ')[1]
     const [username, password] = Buffer.from(auth, 'base64').toString().split(':')
 
-    const validPassword = process.env.SITE_PASSWORD || 'RenaultTrucks2025'
+    const validPassword = process.env.SITE_PASSWORD || 'lebowski2025'
 
     if (password === validPassword) {
       console.log('   → Allowed (authenticated)')

@@ -90,7 +90,7 @@ export default function CreatePage() {
           Nieuw Artikel Maken
         </h1>
         <p className="text-gray-600">
-          AI genereert content met verified facts
+          Lebowski Labs genereert content met verified facts
         </p>
       </div>
 
