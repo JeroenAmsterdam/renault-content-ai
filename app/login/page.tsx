@@ -47,7 +47,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold">
-            AI Content Platform
+            Lebowski Labs
           </CardTitle>
           <CardDescription>
             Enterprise content creation voor marketing bureaus
@@ -59,7 +59,7 @@ export default function LoginPage() {
               <Label htmlFor="clientName">Organisatie</Label>
               <Input
                 id="clientName"
-                placeholder="Bijv: Renault Trucks"
+                placeholder="Voer uw organisatienaam in"
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
                 autoFocus
@@ -95,7 +95,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 text-center text-sm text-gray-600">
-            <p>Powered by AI Content Platform</p>
+            <p>Powered by Lebowski Labs</p>
           </div>
         </CardContent>
       </Card>

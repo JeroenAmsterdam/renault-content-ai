@@ -21,7 +21,7 @@ export default function CreatePage() {
   const router = useRouter()
   const [isCreating, setIsCreating] = useState(false)
   const [topic, setTopic] = useState('')
-  const [audience, setAudience] = useState('fleet-managers')
+  const [audience, setAudience] = useState('decision-makers')
   const [keywords, setKeywords] = useState('')
   const [sources, setSources] = useState('')
   const [briefing, setBriefing] = useState('')
@@ -107,7 +107,7 @@ export default function CreatePage() {
               <Label htmlFor="topic">Onderwerp *</Label>
               <Input
                 id="topic"
-                placeholder="Bijv: TCO berekeningen voor elektrische trucks"
+                placeholder="Waar gaat het artikel over?"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
                 className="text-lg"
@@ -121,9 +121,9 @@ export default function CreatePage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="fleet-managers">Fleet Managers</SelectItem>
-                  <SelectItem value="logistics-directors">Logistiek Directeuren</SelectItem>
-                  <SelectItem value="sustainability-officers">Duurzaamheidsmanagers</SelectItem>
+                  <SelectItem value="decision-makers">Beslissers / Management</SelectItem>
+                  <SelectItem value="technical-specialists">Technische Specialisten</SelectItem>
+                  <SelectItem value="business-professionals">Zakelijke Professionals</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -132,7 +132,7 @@ export default function CreatePage() {
               <Label htmlFor="keywords">Keywords (optioneel)</Label>
               <Input
                 id="keywords"
-                placeholder="TCO, elektrisch, kosten (comma separated)"
+                placeholder="Voer relevante zoekwoorden in, gescheiden door komma's"
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
               />
@@ -151,7 +151,7 @@ export default function CreatePage() {
               <textarea
                 id="sources"
                 className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="https://renault-trucks.nl/artikel-1&#10;https://example.com/article-2&#10;&#10;Één URL per regel"
+                placeholder="https://example.com/article-1&#10;https://example.com/article-2&#10;&#10;Één URL per regel"
                 value={sources}
                 onChange={(e) => setSources(e.target.value)}
               />
@@ -171,7 +171,7 @@ export default function CreatePage() {
               <textarea
                 id="briefing"
                 className="flex min-h-[150px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="Bijvoorbeeld:&#10;&#10;• Focus op TCO voordelen voor MKB&#10;• Interview quote van Jan de Vries (Fleet Manager): 'We besparen 20% op brandstof'&#10;• Doel: Overtuigen van switch naar elektrisch&#10;• Insteek: Praktische tips, geen theory"
+                placeholder="Bijvoorbeeld:&#10;&#10;• Focus op kostenbesparingen en ROI&#10;• Interview quote: 'Deze oplossing heeft ons 25% bespaard'&#10;• Doel: Overtuigen van beslissers om over te stappen&#10;• Insteek: Praktische tips met concrete voorbeelden"
                 value={briefing}
                 onChange={(e) => setBriefing(e.target.value)}
               />
