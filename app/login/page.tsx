@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import { AlertCircleIcon } from 'lucide-react'
 
 export default function LoginPage() {
   const [clientName, setClientName] = useState('')
@@ -30,13 +29,17 @@ export default function LoginPage() {
       const data = await response.json()
 
       if (data.success) {
+        // Store client info in sessionStorage for immediate UI update
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('client_name', data.client.name)
+        }
         router.push('/')
         router.refresh()
       } else {
-        setError('Ongeldige inloggegevens')
+        setError(data.error || 'Ongeldige inloggegevens')
       }
     } catch (err) {
-      setError('Er ging iets mis')
+      setError('Er ging iets mis. Probeer opnieuw.')
     } finally {
       setLoading(false)
     }
@@ -46,11 +49,11 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold">
+          <CardTitle className="text-3xl font-bold text-secondary">
             Lebowski Labs
           </CardTitle>
           <CardDescription>
-            Enterprise content creation voor marketing bureaus
+            AI Content Platform voor Marketing Bureaus
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -59,12 +62,15 @@ export default function LoginPage() {
               <Label htmlFor="clientName">Organisatie</Label>
               <Input
                 id="clientName"
-                placeholder="Voer uw organisatienaam in"
+                placeholder="bijv. Renault Trucks"
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
                 autoFocus
-                required
+                disabled={loading}
               />
+              <p className="text-xs text-gray-500">
+                Voer de volledige naam in zoals: "Renault Trucks" of "Olympisch Stadion"
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -74,28 +80,35 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
+                disabled={loading}
               />
             </div>
 
             {error && (
-              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-600">
-                <AlertCircleIcon className="h-4 w-4" />
+              <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-600">
                 {error}
               </div>
             )}
 
             <Button
               type="submit"
-              className="w-full bg-primary hover:bg-primary-dark text-white"
+              className="w-full bg-primary hover:bg-primary/90"
               disabled={loading}
             >
-              {loading ? 'Bezig...' : 'Inloggen'}
+              {loading ? 'Bezig met inloggen...' : '🔓 Inloggen'}
             </Button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-gray-600">
-            <p>Powered by Lebowski Labs</p>
+          <div className="mt-6 pt-6 border-t text-center text-sm text-gray-600">
+            <p className="font-medium">Demo Credentials:</p>
+            <p className="text-xs mt-2">
+              Organisatie: Renault Trucks<br/>
+              Wachtwoord: renault2025
+            </p>
+            <p className="text-xs mt-2">
+              Organisatie: Olympisch Stadion<br/>
+              Wachtwoord: olympisch2025
+            </p>
           </div>
         </CardContent>
       </Card>

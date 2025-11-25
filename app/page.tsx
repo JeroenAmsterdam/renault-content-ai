@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PlusIcon, FileTextIcon, CheckCircle2Icon, DatabaseIcon } from 'lucide-react'
+import { Header } from '@/components/header'
 
 async function getStats() {
   try {
@@ -22,14 +23,7 @@ export default async function HomePage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-secondary mb-2">
-          Lebowski Labs
-        </h1>
-        <p className="text-gray-600">
-          I had a rough day, and I hate the f*cking Eagles
-        </p>
-      </div>
+      <Header />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">

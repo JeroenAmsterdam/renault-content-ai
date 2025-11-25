@@ -1,47 +1,50 @@
 import { NextResponse } from 'next/server'
-import { getSupabaseAdmin } from '@/lib/supabase/client'
+import { createClient } from '@supabase/supabase-js'
+import bcrypt from 'bcryptjs'
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: { persistSession: false }
+  }
+)
 
 export async function POST(request: Request) {
   try {
     const { clientName, password } = await request.json()
 
-    if (!clientName || !password) {
-      return NextResponse.json(
-        { success: false, error: 'Missing credentials' },
-        { status: 400 }
-      )
-    }
+    console.log('🔐 Login attempt for:', clientName)
 
-    const supabaseAdmin = getSupabaseAdmin()
-
-    // Find client by name
-    const { data: client, error } = await (supabaseAdmin
-      .from('clients') as any)
+    // Find client by name (case-insensitive)
+    const { data: client, error } = await supabaseAdmin
+      .from('clients')
       .select('*')
-      .eq('name', clientName)
+      .ilike('name', clientName)
       .single()
 
     if (error || !client) {
-      console.error('Client not found:', clientName)
+      console.error('❌ Client not found:', clientName)
       return NextResponse.json(
-        { success: false, error: 'Invalid credentials' },
+        { success: false, error: 'Organisatie niet gevonden' },
         { status: 401 }
       )
     }
 
-    // TODO: Add bcrypt password verification
-    // For now, store passwords as plain text in migration
-    // In production, use: await bcrypt.compare(password, client.password_hash)
+    console.log('✓ Client found:', client.name)
 
-    // Temporary simple check (CHANGE THIS IN PRODUCTION!)
-    const validPassword = password === 'renault2025' // Hardcoded for demo
+    // Verify password
+    const validPassword = await bcrypt.compare(password, client.password_hash)
 
     if (!validPassword) {
+      console.error('❌ Invalid password for:', clientName)
       return NextResponse.json(
-        { success: false, error: 'Invalid credentials' },
+        { success: false, error: 'Incorrect wachtwoord' },
         { status: 401 }
       )
     }
+
+    console.log('✅ Login successful for:', client.name)
 
     // Create response with session cookie
     const response = NextResponse.json({
@@ -53,11 +56,11 @@ export async function POST(request: Request) {
       }
     })
 
-    // Set secure HTTP-only cookie
+    // Set secure session cookie
     response.cookies.set('client_session', client.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 30, // 30 days
       path: '/'
     })
@@ -65,7 +68,7 @@ export async function POST(request: Request) {
     return response
 
   } catch (error) {
-    console.error('Login error:', error)
+    console.error('💥 Login error:', error)
     return NextResponse.json(
       { success: false, error: 'Server error' },
       { status: 500 }
