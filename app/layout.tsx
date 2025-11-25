@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'AI Content Platform',
+  title: 'Lebowski Labs',
   description: 'Enterprise content creation met zero-hallucination enforcement',
 }
 
