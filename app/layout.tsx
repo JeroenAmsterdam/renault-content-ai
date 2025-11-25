@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Renault Trucks Content System',
-  description: 'AI-powered content creation with zero-hallucination enforcement',
+  title: 'AI Content Platform',
+  description: 'Enterprise content creation met zero-hallucination enforcement',
 }
 
 export default function RootLayout({
