@@ -2,8 +2,11 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
+  console.log('🔐 Middleware hit:', request.nextUrl.pathname)
+
   // Skip auth in development
   if (process.env.NODE_ENV === 'development') {
+    console.log('   → Skipped (development)')
     return NextResponse.next()
   }
 
@@ -12,6 +15,7 @@ export function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/_next') ||
     request.nextUrl.pathname.startsWith('/favicon.ico')
   ) {
+    console.log('   → Skipped (static file)')
     return NextResponse.next()
   }
 
@@ -19,6 +23,7 @@ export function middleware(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
 
   if (!authHeader) {
+    console.log('   → Blocked (no auth header)')
     return new NextResponse('Authentication required', {
       status: 401,
       headers: {
@@ -35,13 +40,16 @@ export function middleware(request: NextRequest) {
     const validPassword = process.env.SITE_PASSWORD || 'RenaultTrucks2025'
 
     if (password === validPassword) {
+      console.log('   → Allowed (authenticated)')
       return NextResponse.next()
     }
   } catch (error) {
     // Invalid auth header format
+    console.log('   → Blocked (invalid auth format)')
   }
 
   // Auth failed
+  console.log('   → Blocked (invalid credentials)')
   return new NextResponse('Authentication required', {
     status: 401,
     headers: {
@@ -54,10 +62,11 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except:
+     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 }
