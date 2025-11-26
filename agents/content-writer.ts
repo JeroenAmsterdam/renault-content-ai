@@ -13,7 +13,7 @@
  */
 
 import { anthropic, MODEL } from '@/lib/anthropic/client'
-import { getBrandGuidelines, getAudienceProfile } from '@/lib/brand-knowledge'
+import { getBrandGuidelines } from '@/lib/brand-knowledge'
 import type { Fact } from '@/types/agent-types'
 
 const WRITER_PROMPT = `Je bent een B2B content writer die werkt met client-specifieke brand guidelines.
@@ -108,16 +108,8 @@ export async function runContentWriter(input: WriterInput): Promise<Article> {
   console.log(`   Available facts: ${approvedFacts.length}`)
 
   try {
-    // Get brand guidelines and audience profile
+    // Get brand guidelines
     const brandGuidelines = getBrandGuidelines()
-    const audienceProfile = getAudienceProfile(targetAudience)
-
-    if (!audienceProfile) {
-      throw new Error(`Unknown target audience: ${targetAudience}`)
-    }
-
-    // Create outline first
-    const outline = generateOutline(topic, audienceProfile, approvedFacts)
 
     // Call Claude for content creation
     const response = await anthropic.messages.create({
@@ -143,8 +135,14 @@ IMPORTANT: Use this briefing as your PRIMARY GUIDANCE.
 BRAND GUIDELINES:
 ${JSON.stringify(brandGuidelines.toneOfVoice, null, 2)}
 
-TARGET AUDIENCE: ${targetAudience}
-Profile: ${JSON.stringify(audienceProfile, null, 2)}
+TARGET AUDIENCE & TONE-OF-VOICE:
+${targetAudience}
+
+IMPORTANT: Use the target audience description above to determine:
+- Who you're writing for (demographics, role, industry, location)
+- How to address them (je/u)
+- What tone to use (zakelijk, inspirerend, technisch, etc.)
+- What they care about (pain points, interests)
 
 APPROVED FACTS (use ONLY these):
 ${JSON.stringify(approvedFacts, null, 2)}
@@ -154,9 +152,6 @@ TOPIC: ${topic}
 SEO KEYWORDS: ${keywords.join(', ')}
 
 DESIRED WORD COUNT: ${desiredWordCount}
-
-OUTLINE:
-${outline}
 
 Schrijf een compleet artikel volgens de structure. Return JSON format.
 
@@ -202,42 +197,3 @@ CRITICAL: Gebruik ALLEEN de approved facts. Verzin NIETS. Bij twijfel: [PLACEHOL
   }
 }
 
-/**
- * Generate article outline based on topic, audience, and available facts
- */
-function generateOutline(
-  topic: string,
-  audience: any,
-  facts: Fact[]
-): string {
-  // Categorize facts
-  const technicalFacts = facts.filter((f) => f.category === 'technical')
-  const specFacts = facts.filter((f) => f.category === 'specification')
-
-  // Generate outline based on available facts and audience interests
-  const sections = [
-    `## Introductie\n- Context: ${topic}\n- Relevantie voor ${audience.interests.join(', ')}`,
-  ]
-
-  if (technicalFacts.length > 0) {
-    sections.push(
-      `## Technische Specificaties\n- Gebruik facts over E-Tech technische details\n- Focus op ${audience.interests[0]}`
-    )
-  }
-
-  if (specFacts.length > 0) {
-    sections.push(
-      `## Praktische Details\n- Concrete specificaties\n- Impact op ${audience.painPoints[0]}`
-    )
-  }
-
-  sections.push(
-    `## Praktische Toepassing\n- Focus on ${audience.painPoints.join(', ')}\n- Real-world relevance`
-  )
-
-  sections.push(
-    `## Conclusie\n- Key takeaways\n- Actionable next steps voor ${audience.language} besluitvorming`
-  )
-
-  return sections.join('\n\n')
-}
