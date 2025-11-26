@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PlusIcon, FileTextIcon } from 'lucide-react'
+import { PageWrapper } from '@/components/page-wrapper'
 
 async function getStats() {
   try {
@@ -20,16 +21,8 @@ export default async function HomePage() {
   const stats = await getStats()
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Animated gradient background */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-300 via-pink-300 via-purple-300 to-yellow-200 animate-gradient-slow"></div>
-        <div className="absolute inset-0 bg-gradient-to-tl from-pink-400/30 via-purple-400/30 to-orange-300/30 animate-gradient-reverse blur-3xl"></div>
-        <div className="absolute inset-0 bg-gradient-to-tr from-yellow-300/20 via-orange-400/20 to-pink-400/20 animate-gradient-slow" style={{ animationDelay: '4s' }}></div>
-      </div>
-
-      {/* Rest of content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <PageWrapper>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-0">
@@ -164,6 +157,6 @@ export default async function HomePage() {
           </div>
         </footer>
       </div>
-    </div>
+    </PageWrapper>
   )
 }

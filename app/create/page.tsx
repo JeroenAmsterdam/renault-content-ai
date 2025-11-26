@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -9,8 +10,9 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { Loader2Icon, CheckCircle2Icon, AlertCircleIcon } from 'lucide-react'
+import { Loader2Icon, CheckCircle2Icon, AlertCircleIcon, ChevronLeft } from 'lucide-react'
 import { createArticle } from '@/lib/api-client'
+import { PageWrapper } from '@/components/page-wrapper'
 
 type WorkflowStep = {
   name: string
@@ -89,18 +91,28 @@ export default function CreatePage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-secondary mb-2">
-          Nieuw Artikel Maken
-        </h1>
-        <p className="text-gray-600">
-          Lebowski Labs genereert content met verified facts
-        </p>
-      </div>
+    <PageWrapper>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Back button */}
+        <Link href="/">
+          <Button variant="ghost" size="sm" className="gap-2 mb-6 text-white hover:text-white hover:bg-white/10">
+            <ChevronLeft className="w-4 h-4" />
+            Terug naar dashboard
+          </Button>
+        </Link>
 
-      {!isCreating ? (
-        <Card>
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-5xl font-bold text-white drop-shadow-lg mb-2">
+            Nieuw Artikel Maken
+          </h1>
+          <p className="text-white/90 drop-shadow-md text-lg">
+            AI genereert content met verified facts
+          </p>
+        </div>
+
+        {!isCreating ? (
+          <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border-0">
           <CardHeader>
             <CardTitle>Content Details</CardTitle>
             <CardDescription>
@@ -207,15 +219,15 @@ export default function CreatePage() {
 
             <Button
               onClick={handleCreate}
-              className="w-full bg-primary hover:bg-primary-dark text-white"
+              className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-bold shadow-lg"
               size="lg"
             >
               🚀 Artikel Genereren
             </Button>
           </CardContent>
         </Card>
-      ) : (
-        <Card>
+        ) : (
+          <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border-0">
           <CardHeader>
             <CardTitle>Artikel wordt gegenereerd...</CardTitle>
             <CardDescription>
@@ -259,7 +271,8 @@ export default function CreatePage() {
             )}
           </CardContent>
         </Card>
-      )}
-    </div>
+        )}
+      </div>
+    </PageWrapper>
   )
 }
