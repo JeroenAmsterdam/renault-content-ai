@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { Navigation } from '@/components/navigation'
 
 export const metadata: Metadata = {
   title: 'Lebowski Labs - AI Content Platform',
@@ -14,6 +15,7 @@ export default function RootLayout({
   return (
     <html lang="nl">
       <body className="font-sans antialiased">
+        <Navigation />
         {children}
       </body>
     </html>

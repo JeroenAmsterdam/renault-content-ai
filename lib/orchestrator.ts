@@ -215,28 +215,63 @@ export async function createContent(
       factsUsed: article.factsUsed.length,
     })
 
-    // STEP 4: Compliance Check (20-40s)
+    // STEP 4: Compliance Check (20-40s) - NON-BLOCKING
     logger.startStep('Compliance')
-    const compliance = await runComplianceChecker(article, validation.approved)
-    logger.completeStep('Compliance', {
-      approved: compliance.approved,
-      score: compliance.overallScore,
-    })
+    let compliance: ComplianceResult
 
-    // CHECK: Compliance (warning, not blocking)
-    if (!compliance.approved) {
-      qualityWarnings.push(
-        `⚠️ Compliance check failed (score: ${compliance.overallScore}/100)`
-      )
+    try {
+      compliance = await runComplianceChecker(article, validation.approved)
+      logger.completeStep('Compliance', {
+        approved: compliance.approved,
+        score: compliance.overallScore,
+      })
 
-      const criticalIssues = compliance.issues.filter((i) => i.severity === 'critical')
-      if (criticalIssues.length > 0) {
+      // CHECK: Compliance (warning, not blocking)
+      if (!compliance.approved) {
         qualityWarnings.push(
-          `Critical issues: ${criticalIssues.map((i) => i.description).join(', ')}`
+          `⚠️ Compliance check failed (score: ${compliance.overallScore}/100)`
         )
+
+        const criticalIssues = compliance.issues.filter((i) => i.severity === 'critical')
+        if (criticalIssues.length > 0) {
+          qualityWarnings.push(
+            `Critical issues: ${criticalIssues.map((i) => i.description).join(', ')}`
+          )
+        }
+
+        console.warn(`⚠️  Compliance issues: ${criticalIssues.length} critical`)
+      }
+    } catch (complianceError: any) {
+      // Compliance check failed completely - create mock result and continue
+      console.error('⚠️  Compliance check error (non-blocking):', complianceError.message)
+      logger.failStep('Compliance', complianceError.message)
+
+      compliance = {
+        approved: false,
+        overallScore: 0,
+        checks: {
+          factVerification: { passed: false, score: 0, issues: [] },
+          toneOfVoice: { passed: false, score: 0, issues: [] },
+          technical: { passed: false, score: 0, issues: [] },
+          completeness: { passed: false, score: 0, issues: [] },
+          seo: { passed: false, score: 0, issues: [] },
+        },
+        issues: [{
+          severity: 'critical',
+          check: 'system',
+          description: 'Compliance check failed to run',
+          location: 'orchestrator',
+          suggestion: 'Review article manually before publishing',
+        }],
+        recommendations: ['Manual review required before publishing'],
       }
 
-      console.warn(`⚠️  Compliance issues: ${criticalIssues.length} critical`)
+      qualityWarnings.push(
+        `⚠️ Compliance check could not run: ${complianceError.message}`
+      )
+      qualityWarnings.push(
+        '⚠️ Article saved but requires manual compliance review before publishing'
+      )
     }
 
     // STEP 5: Save to Database
@@ -294,18 +329,7 @@ export async function createContent(
       }
     }
 
-    if (error instanceof ComplianceError) {
-      return {
-        success: false,
-        error: 'Compliance check failed',
-        errorType: 'compliance_failed',
-        errorDetails: {
-          message: 'Article contains critical issues that block publication',
-          issues: error.criticalIssues,
-        },
-        workflow: logger.getWorkflow(),
-      }
-    }
+    // Note: ComplianceError is now handled inline and non-blocking
 
     // Generic error
     return {
