@@ -185,10 +185,11 @@ export async function createContent(
       approvalRate: validation.approvalRate,
     })
 
-    // CHECK: Minimum 5 approved facts (warning, not blocking)
-    if (validation.approved.length < 5) {
+    // CHECK: Minimum approved facts (warning, not blocking)
+    // Note: Hard minimum is checked in validator (now set to 1)
+    if (validation.approved.length < 3) {
       qualityWarnings.push(
-        `⚠️ Only ${validation.approved.length} verified facts found. Article may lack depth.`
+        `⚠️ Only ${validation.approved.length} verified facts found. Article may lack depth. (Recommended: 3+)`
       )
       console.warn(`⚠️  Low fact count: ${validation.approved.length} facts`)
     }
