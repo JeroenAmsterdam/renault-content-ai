@@ -135,10 +135,11 @@ Valideer elk fact volgens de strikte regels. Return JSON met approved en rejecte
     const approvalRate =
       facts.length > 0 ? (result.approved.length / facts.length) * 100 : 0
 
-    // Minimum facts requirement - lowered for better usability
-    const MIN_FACTS_REQUIRED = 1 // Was 5, now more lenient
+    // Minimum facts requirement - set to 0 to ALWAYS allow articles
+    // Even with 0 approved facts, article will be created (with warnings)
+    const MIN_FACTS_REQUIRED = 0 // Was 1, now completely permissive for testing
 
-    // Hard stop only if NO facts approved
+    // Hard stop only if fewer than 0 facts (never blocks!)
     if (result.approved.length < MIN_FACTS_REQUIRED) {
       console.warn(
         `⚠️  Only ${result.approved.length} facts approved (minimum: ${MIN_FACTS_REQUIRED})`
@@ -149,8 +150,15 @@ Valideer elk fact volgens de strikte regels. Return JSON met approved en rejecte
       )
     }
 
-    // Warning for low fact count (but not blocking)
-    if (result.approved.length < 3) {
+    // Warning for ANY low fact count (but not blocking)
+    if (result.approved.length === 0) {
+      console.warn(
+        `⚠️  ZERO facts approved! All facts were rejected by validator.`
+      )
+      console.warn(
+        `⚠️  Article will be created anyway, but quality may be very poor.`
+      )
+    } else if (result.approved.length < 3) {
       console.warn(
         `⚠️  Low fact count: ${result.approved.length} facts approved (recommended: 3+)`
       )

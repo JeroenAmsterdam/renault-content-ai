@@ -185,9 +185,14 @@ export async function createContent(
       approvalRate: validation.approvalRate,
     })
 
-    // CHECK: Minimum approved facts (warning, not blocking)
-    // Note: Hard minimum is checked in validator (now set to 1)
-    if (validation.approved.length < 3) {
+    // CHECK: Minimum approved facts (warning only, never blocking)
+    // Note: Hard minimum is now 0 in validator - articles ALWAYS created
+    if (validation.approved.length === 0) {
+      qualityWarnings.push(
+        `⚠️ ZERO verified facts found! All facts were rejected. Article quality will be very poor.`
+      )
+      console.warn(`⚠️  CRITICAL: Zero facts approved - article will lack factual basis`)
+    } else if (validation.approved.length < 3) {
       qualityWarnings.push(
         `⚠️ Only ${validation.approved.length} verified facts found. Article may lack depth. (Recommended: 3+)`
       )
