@@ -135,14 +135,24 @@ Valideer elk fact volgens de strikte regels. Return JSON met approved en rejecte
     const approvalRate =
       facts.length > 0 ? (result.approved.length / facts.length) * 100 : 0
 
-    // Hard stop if too few approved facts
-    if (result.approved.length < 5) {
+    // Minimum facts requirement - lowered for better usability
+    const MIN_FACTS_REQUIRED = 1 // Was 5, now more lenient
+
+    // Hard stop only if NO facts approved
+    if (result.approved.length < MIN_FACTS_REQUIRED) {
       console.warn(
-        `⚠️  Only ${result.approved.length} facts approved (minimum: 5)`
+        `⚠️  Only ${result.approved.length} facts approved (minimum: ${MIN_FACTS_REQUIRED})`
       )
       throw new InsufficientFactsError(
-        `Only ${result.approved.length} facts approved. Need minimum 5 for content creation.`,
+        `Only ${result.approved.length} facts approved. Need minimum ${MIN_FACTS_REQUIRED} for content creation.`,
         result.rejected
+      )
+    }
+
+    // Warning for low fact count (but not blocking)
+    if (result.approved.length < 3) {
+      console.warn(
+        `⚠️  Low fact count: ${result.approved.length} facts approved (recommended: 3+)`
       )
     }
 
