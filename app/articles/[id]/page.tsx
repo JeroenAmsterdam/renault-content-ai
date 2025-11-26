@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ArrowLeftIcon, DownloadIcon, CopyIcon, CheckCircle2Icon } from 'lucide-react'
+import { ChevronLeft, DownloadIcon, CopyIcon, CheckCircle2Icon } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
+import { PageWrapper } from '@/components/page-wrapper'
 
 async function getArticle(id: string) {
   try {
@@ -66,66 +67,44 @@ export default async function ArticlePage({
   }
 
   const metadata = article.metadata || {}
-  const compliance = metadata.compliance || {}
   const factsUsed = metadata.factsUsed || []
+  const compliance = metadata.compliance || {}
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-6">
+    <PageWrapper>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Back button */}
         <Link href="/articles">
-          <Button variant="ghost" className="mb-4">
-            <ArrowLeftIcon className="mr-2 h-4 w-4" />
-            Terug naar overzicht
+          <Button variant="ghost" size="sm" className="gap-2 mb-6 text-white hover:text-white hover:bg-white/10">
+            <ChevronLeft className="w-4 h-4" />
+            Terug naar artikelen
           </Button>
         </Link>
 
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <h1 className="text-4xl font-bold text-secondary mb-3">
-              {article.title}
-            </h1>
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              <Badge className={getStatusColor(article.status)}>
-                {article.status}
-              </Badge>
-              <span>{article.word_count} woorden</span>
-              <span>•</span>
-              <span>{article.target_audience}</span>
-              <span>•</span>
-              <span>{new Date(article.created_at).toLocaleDateString('nl-NL')}</span>
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <CopyIcon className="mr-2 h-4 w-4" />
-              Kopiëren
-            </Button>
-            <Button variant="outline" size="sm">
-              <DownloadIcon className="mr-2 h-4 w-4" />
-              Download
-            </Button>
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-5xl font-bold text-white drop-shadow-lg mb-4">
+            {article.title}
+          </h1>
+          <div className="flex items-center gap-4 text-white/90 drop-shadow-md flex-wrap">
+            <span>📅 {new Date(article.created_at).toLocaleDateString('nl-NL')}</span>
+            <span>📊 {article.word_count} woorden</span>
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+              article.status === 'approved' ? 'bg-green-500/90 text-white' :
+              article.status === 'needs_review' ? 'bg-yellow-500/90 text-white' :
+              'bg-gray-500/90 text-white'
+            }`}>
+              {article.status}
+            </span>
           </div>
         </div>
 
-        {/* Meta description */}
-        {metadata.metaDescription && (
-          <Card className="bg-blue-50 border-blue-200">
-            <CardContent className="pt-4">
-              <p className="text-sm text-gray-700">
-                <strong>Meta Description:</strong> {metadata.metaDescription}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Quality Warnings */}
         {metadata.qualityWarnings && metadata.qualityWarnings.length > 0 && (
-          <Card className="bg-yellow-50 border-yellow-200 mt-4">
+          <Card className="bg-yellow-50/95 backdrop-blur-sm border-yellow-300 border-2 mb-6 shadow-xl">
             <CardHeader>
               <CardTitle className="text-yellow-800 flex items-center gap-2">
-                <span className="text-xl">⚠️</span>
+                <span className="text-2xl">⚠️</span>
                 Quality Warnings
               </CardTitle>
             </CardHeader>
@@ -137,74 +116,54 @@ export default async function ArticlePage({
                   </li>
                 ))}
               </ul>
-              <p className="text-sm text-yellow-800 mt-4">
-                💡 Review these issues before publishing. You may want to regenerate with additional sources.
-              </p>
             </CardContent>
           </Card>
         )}
-      </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="article" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="article">Artikel</TabsTrigger>
-          <TabsTrigger value="facts">
-            Facts ({factsUsed.length})
-          </TabsTrigger>
-          <TabsTrigger value="compliance">Compliance</TabsTrigger>
-          <TabsTrigger value="metadata">Metadata</TabsTrigger>
-        </TabsList>
-
-        {/* Article Content */}
-        <TabsContent value="article">
-          <Card>
-            <CardContent className="pt-6">
-              <article className="prose prose-lg max-w-none">
-                <ReactMarkdown>{article.content}</ReactMarkdown>
-              </article>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Facts Used */}
-        <TabsContent value="facts">
-          <Card>
+        {/* Content Tabs */}
+        <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border-0">
+          <Tabs defaultValue="article" className="w-full">
             <CardHeader>
-              <CardTitle>Facts Gebruikt in Artikel</CardTitle>
+              <TabsList className="grid grid-cols-4 w-full">
+                <TabsTrigger value="article">Artikel</TabsTrigger>
+                <TabsTrigger value="facts">Facts ({factsUsed.length})</TabsTrigger>
+                <TabsTrigger value="compliance">Compliance</TabsTrigger>
+                <TabsTrigger value="metadata">Metadata</TabsTrigger>
+              </TabsList>
             </CardHeader>
+
             <CardContent>
-              {factsUsed.length === 0 ? (
-                <p className="text-gray-600">Geen facts data beschikbaar</p>
-              ) : (
-                <div className="space-y-4">
-                  {factsUsed.map((fact: string, index: number) => (
-                    <div
-                      key={index}
-                      className="p-4 bg-gray-50 rounded-lg border border-gray-200"
-                    >
-                      <div className="flex items-start gap-3">
-                        <CheckCircle2Icon className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1">
-                          <p className="text-sm text-gray-800">{fact}</p>
+              {/* Article Content */}
+              <TabsContent value="article" className="prose prose-lg max-w-none mt-0">
+                <ReactMarkdown>{article.content}</ReactMarkdown>
+              </TabsContent>
+
+              {/* Facts Used */}
+              <TabsContent value="facts" className="mt-0">
+                {factsUsed.length === 0 ? (
+                  <p className="text-gray-600">Geen facts data beschikbaar</p>
+                ) : (
+                  <div className="space-y-4">
+                    {factsUsed.map((fact: string, index: number) => (
+                      <div
+                        key={index}
+                        className="p-4 bg-gray-50 rounded-lg border border-gray-200"
+                      >
+                        <div className="flex items-start gap-3">
+                          <CheckCircle2Icon className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                          <div className="flex-1">
+                            <p className="text-sm text-gray-800">{fact}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
 
-        {/* Compliance Report */}
-        <TabsContent value="compliance">
-          <Card>
-            <CardHeader>
-              <CardTitle>Compliance Report</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {compliance.score ? (
+              {/* Compliance Report */}
+              <TabsContent value="compliance" className="mt-0">
+                {compliance.score ? (
                 <div className="space-y-6">
                   {/* Overall Score */}
                   <div className="text-center p-6 bg-green-50 rounded-lg">
@@ -241,21 +200,14 @@ export default async function ArticlePage({
                     </div>
                   )}
                 </div>
-              ) : (
-                <p className="text-gray-600">Geen compliance data beschikbaar</p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+                ) : (
+                  <p className="text-gray-600">Geen compliance data beschikbaar</p>
+                )}
+              </TabsContent>
 
-        {/* Metadata */}
-        <TabsContent value="metadata">
-          <Card>
-            <CardHeader>
-              <CardTitle>Article Metadata</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <dl className="space-y-3">
+              {/* Metadata */}
+              <TabsContent value="metadata" className="mt-0">
+                <dl className="space-y-3">
                 <div className="flex justify-between py-2 border-b">
                   <dt className="font-medium text-gray-600">Topic:</dt>
                   <dd className="text-gray-900">{article.topic}</dd>
@@ -302,11 +254,12 @@ export default async function ArticlePage({
                     </dd>
                   </div>
                 )}
-              </dl>
+                </dl>
+              </TabsContent>
             </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+          </Tabs>
+        </Card>
+      </div>
+    </PageWrapper>
   )
 }

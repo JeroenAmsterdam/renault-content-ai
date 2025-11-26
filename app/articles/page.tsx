@@ -2,7 +2,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { PlusIcon, FileTextIcon } from 'lucide-react'
+import { PlusIcon, FileTextIcon, ChevronLeft } from 'lucide-react'
+import { PageWrapper } from '@/components/page-wrapper'
 
 async function getArticles() {
   try {
@@ -31,26 +32,28 @@ export default async function ArticlesPage() {
   const articles = await getArticles()
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-4xl font-bold text-secondary mb-2">
+    <PageWrapper>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Back button */}
+        <Link href="/">
+          <Button variant="ghost" size="sm" className="gap-2 mb-6 text-white hover:text-white hover:bg-white/10">
+            <ChevronLeft className="w-4 h-4" />
+            Terug naar dashboard
+          </Button>
+        </Link>
+
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-5xl font-bold text-white drop-shadow-lg mb-2">
             Alle Artikelen
           </h1>
-          <p className="text-gray-600">
+          <p className="text-white/90 drop-shadow-md text-lg">
             {articles.length} artikel{articles.length !== 1 ? 'en' : ''} gevonden
           </p>
         </div>
-        <Link href="/create">
-          <Button className="bg-primary hover:bg-primary-dark text-white">
-            <PlusIcon className="mr-2 h-5 w-5" />
-            Nieuw Artikel
-          </Button>
-        </Link>
-      </div>
 
-      {articles.length === 0 ? (
-        <Card>
+        {articles.length === 0 ? (
+          <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-0">
           <CardContent className="py-12 text-center">
             <FileTextIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Geen artikelen gevonden</h3>
@@ -58,41 +61,44 @@ export default async function ArticlesPage() {
               Maak je eerste artikel om te beginnen
             </p>
             <Link href="/create">
-              <Button className="bg-primary hover:bg-primary-dark text-white">
+              <Button className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-bold shadow-lg">
+                <PlusIcon className="mr-2 h-5 w-5" />
                 Nieuw Artikel Maken
               </Button>
             </Link>
           </CardContent>
         </Card>
-      ) : (
-        <div className="space-y-4">
-          {articles.map((article: any) => (
-            <Link key={article.id} href={`/articles/${article.id}`}>
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {articles.map((article: any) => (
+              <Link key={article.id} href={`/articles/${article.id}`}>
+                <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-0 hover:shadow-2xl transition-shadow duration-300 cursor-pointer h-full">
                 <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-xl mb-2">
-                        {article.title}
-                      </CardTitle>
-                      <div className="flex items-center gap-3 text-sm text-gray-600">
-                        <span>{article.word_count} woorden</span>
-                        <span>•</span>
-                        <span>{article.target_audience}</span>
-                        <span>•</span>
-                        <span>{new Date(article.created_at).toLocaleDateString('nl-NL')}</span>
-                      </div>
-                    </div>
-                    <Badge className={getStatusColor(article.status)}>
-                      {article.status}
-                    </Badge>
-                  </div>
+                  <CardTitle className="line-clamp-2 mb-4">
+                    {article.title}
+                  </CardTitle>
                 </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <p>📊 {article.word_count} woorden</p>
+                    <p>📅 {new Date(article.created_at).toLocaleDateString('nl-NL')}</p>
+                    <p>
+                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                        article.status === 'approved' ? 'bg-green-100 text-green-800' :
+                        article.status === 'needs_review' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {article.status}
+                      </span>
+                    </p>
+                  </div>
+                </CardContent>
               </Card>
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </PageWrapper>
   )
 }
