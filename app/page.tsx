@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PlusIcon, FileTextIcon } from 'lucide-react'
-import { Header } from '@/components/header'
 
 async function getStats() {
   try {
@@ -31,9 +30,6 @@ export default async function HomePage() {
 
       {/* Rest of content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <Header />
-
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-0">
