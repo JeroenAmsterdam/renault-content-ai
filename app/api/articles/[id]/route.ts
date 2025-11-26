@@ -21,25 +21,36 @@ export async function GET(
     const clientId = clientSession.value
     const { id } = await params
 
-    const { data, error } = await supabase
+    console.log('📄 Fetching article:', id)
+    console.log('👤 Client ID:', clientId)
+
+    const { data: article, error } = await supabase
       .from('articles')
       .select('*')
       .eq('id', id)
       .eq('client_id', clientId)
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('❌ Supabase error:', error)
+      throw error
+    }
 
-    if (!data) {
+    if (!article) {
+      console.error('❌ Article not found - no data returned')
       return NextResponse.json(
         { success: false, error: 'Article not found' },
         { status: 404 }
       )
     }
 
+    // Type assertion needed because Supabase types are not properly inferred
+    const typedArticle = article as any
+    console.log('✅ Article found:', typedArticle.title)
+
     return NextResponse.json({
       success: true,
-      article: data
+      article: typedArticle
     })
 
   } catch (error: any) {
