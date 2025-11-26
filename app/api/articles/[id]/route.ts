@@ -21,6 +21,9 @@ export async function GET(
     const clientId = clientSession.value
     const { id } = await params
 
+    console.log('📄 Fetching article:', id)
+    console.log('👤 Client ID:', clientId)
+
     const { data, error } = await supabase
       .from('articles')
       .select('*')
@@ -28,14 +31,20 @@ export async function GET(
       .eq('client_id', clientId)
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('❌ Supabase error:', error)
+      throw error
+    }
 
     if (!data) {
+      console.error('❌ Article not found - no data returned')
       return NextResponse.json(
         { success: false, error: 'Article not found' },
         { status: 404 }
       )
     }
+
+    console.log('✅ Article found:', data.title)
 
     return NextResponse.json({
       success: true,

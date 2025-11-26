@@ -75,16 +75,36 @@ export default function CreatePage() {
 
       if (result.success) {
         setCurrentStep('Completed')
-        // Redirect to article after short delay
+
+        // Get article ID - try multiple paths for robustness
+        const articleId = result.articleId || result.article?.id
+
+        console.log('✅ Article created successfully')
+        console.log('📝 Article ID:', articleId)
+        console.log('📋 Full result:', result)
+
+        if (!articleId) {
+          console.error('❌ No article ID in response!')
+          // Fallback: redirect to articles list
+          setTimeout(() => {
+            window.location.href = '/articles'
+          }, 1500)
+          return
+        }
+
+        // Use window.location for hard redirect (bypasses Next.js cache)
+        console.log('🔄 Redirecting to:', `/articles/${articleId}`)
         setTimeout(() => {
-          router.push(`/articles/${result.articleId}`)
+          window.location.href = `/articles/${articleId}`
         }, 1500)
       } else {
+        console.error('❌ Article creation failed:', result.error)
         setError(result.error || 'Er ging iets mis')
         setIsCreating(false)
       }
 
     } catch (err: any) {
+      console.error('💥 Article creation error:', err)
       setError(err.message || 'Er ging iets mis')
       setIsCreating(false)
     }

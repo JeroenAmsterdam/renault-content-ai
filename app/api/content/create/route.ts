@@ -32,6 +32,8 @@ export async function POST(request: Request) {
       )
     }
 
+    console.log('🎯 Creating article for client:', clientId)
+
     // Run orchestrator with client_id
     const result = await createContent({
       topic,
@@ -44,7 +46,17 @@ export async function POST(request: Request) {
       clientId // Add client_id from session
     })
 
-    return NextResponse.json(result)
+    console.log('✅ Article created:', result.articleId)
+
+    // Return article ID at top level AND in article object for redundancy
+    return NextResponse.json({
+      success: result.success,
+      articleId: result.articleId,  // Explicit ID at top level
+      article: result.article,
+      compliance: result.compliance,
+      qualityWarnings: result.qualityWarnings,
+      workflow: result.workflow
+    })
 
   } catch (error: any) {
     console.error('API Error:', error)
