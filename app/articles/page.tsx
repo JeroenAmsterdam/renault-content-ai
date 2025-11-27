@@ -1,17 +1,37 @@
 import Link from 'next/link'
+import { cookies } from 'next/headers'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { PlusIcon, FileTextIcon, ChevronLeft } from 'lucide-react'
 import { PageWrapper } from '@/components/page-wrapper'
+import { supabase } from '@/lib/supabase/client'
 
 async function getArticles() {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/articles?limit=20`, {
-      cache: 'no-store'
-    })
-    const data = await response.json()
-    return data.articles || []
+    const cookieStore = await cookies()
+    const clientSession = cookieStore.get('client_session')
+
+    if (!clientSession) {
+      console.error('No client session found')
+      return []
+    }
+
+    const clientId = clientSession.value
+
+    const { data: articles, error } = await supabase
+      .from('articles')
+      .select('*')
+      .eq('client_id', clientId)
+      .order('created_at', { ascending: false })
+      .limit(20)
+
+    if (error) {
+      console.error('Supabase error:', error)
+      return []
+    }
+
+    return articles || []
   } catch (error) {
     console.error('Failed to fetch articles:', error)
     return []

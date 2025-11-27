@@ -4,16 +4,17 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Skip middleware for static files and public routes
+  // Skip middleware for static files, API routes, and public routes
   if (
     pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||      // Let API routes handle their own auth
     pathname.startsWith('/favicon.ico') ||
     pathname === '/login'
   ) {
     return NextResponse.next()
   }
 
-  // Check if user has client session
+  // Check if user has client session (for page routes only)
   const clientSession = request.cookies.get('client_session')
 
   if (!clientSession) {
@@ -21,11 +22,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Add client_id to request headers for use in API routes
-  const response = NextResponse.next()
-  response.headers.set('x-client-id', clientSession.value)
-
-  return response
+  return NextResponse.next()
 }
 
 export const config = {
