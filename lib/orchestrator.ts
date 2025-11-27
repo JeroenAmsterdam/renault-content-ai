@@ -155,9 +155,24 @@ export async function createContent(
 ): Promise<ContentResult> {
   const logger = new WorkflowLogger()
 
-  console.log('\n🚀 Starting content creation workflow...')
-  console.log(`Topic: ${request.topic}`)
-  console.log(`Audience: ${request.targetAudience}`)
+  console.log('\n🚀 ORCHESTRATOR: Starting content creation')
+  console.log('📋 Request:', {
+    topic: request.topic,
+    targetAudience: request.targetAudience,
+    clientId: request.clientId,
+    userId: request.userId
+  })
+
+  // Validate required fields
+  if (!request.clientId) {
+    throw new Error('CRITICAL: clientId is required but was not provided')
+  }
+
+  if (!request.topic || !request.targetAudience) {
+    throw new Error('Topic and target audience are required')
+  }
+
+  console.log('✅ Validation passed, starting workflow...')
 
   const qualityWarnings: string[] = []
 
@@ -287,6 +302,7 @@ export async function createContent(
       compliance,
       facts: validation.approved,
       userId: request.userId,
+      clientId: request.clientId,
       request,
       qualityWarnings,
     })
@@ -355,22 +371,23 @@ export async function createContent(
  * Save article to database
  */
 async function saveArticle(data: any) {
-  console.log('🔍 === SAVE ARTICLE DEBUG ===')
-  console.log('Environment check:')
-  console.log('- NODE_ENV:', process.env.NODE_ENV)
-  console.log('- SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...')
-  console.log('- SERVICE_ROLE_KEY exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
+  console.log('💾 SAVE: Preparing to save article')
+  console.log('💾 SAVE: client_id =', data.clientId)
+  console.log('💾 SAVE: title =', data.article?.title)
 
-  console.log('\n📦 Data to insert:')
+  if (!data.clientId) {
+    throw new Error('SAVE ERROR: clientId is missing from save data')
+  }
+
   const insertData = {
     title: data.article.title,
     content: data.article.content,
     topic: data.request.topic,
     target_audience: data.request.targetAudience,
-    status: 'draft', // Use 'draft' to match database constraint
+    status: data.qualityWarnings?.length > 0 ? 'needs_review' : 'draft',
     word_count: data.article.wordCount,
     created_by: data.userId || 'system',
-    client_id: data.request.clientId, // Add client_id for multi-tenant support
+    client_id: data.clientId,  // ← MUST be here
     metadata: {
       keywords: data.article.keywords,
       factsUsed: data.article.factsUsed,
@@ -384,39 +401,33 @@ async function saveArticle(data: any) {
     },
   }
 
-  console.log('Insert data:', JSON.stringify(insertData, null, 2))
+  console.log('💾 SAVE: Insert data prepared, client_id =', insertData.client_id)
 
   try {
-    console.log('\n💾 Attempting Supabase insert...')
+    console.log('💾 SAVE: Attempting Supabase insert...')
     const supabaseAdmin = getSupabaseAdmin()
 
-    const { data: article, error } = await (supabaseAdmin
+    const { data: savedArticle, error } = await (supabaseAdmin
       .from('articles') as any)
       .insert(insertData)
       .select()
       .single()
 
     if (error) {
-      console.error('❌ SUPABASE ERROR:')
-      console.error('Message:', error.message)
-      console.error('Details:', error.details)
-      console.error('Hint:', error.hint)
-      console.error('Code:', error.code)
-      console.error('Full error:', JSON.stringify(error, null, 2))
-      throw error
+      console.error('❌ SAVE ERROR:', error)
+      throw new Error(`Database error: ${error.message}`)
     }
 
-    console.log('✅ SUCCESS! Article saved:', article.id)
-    console.log('Article data:', JSON.stringify(article, null, 2))
-    return article
+    console.log('✅ SAVE: Article saved successfully with ID:', savedArticle.id)
+    console.log('✅ SAVE: Verify client_id =', savedArticle.client_id)
+
+    return savedArticle
 
   } catch (error: any) {
-    console.error('💥 EXCEPTION in saveArticle:')
+    console.error('💥 SAVE EXCEPTION:')
     console.error('Error name:', error.name)
     console.error('Error message:', error.message)
     console.error('Error stack:', error.stack)
-
-    // Still throw to see full error in response
     throw error
   }
 }
