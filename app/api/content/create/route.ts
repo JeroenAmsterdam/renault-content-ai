@@ -10,14 +10,23 @@ export async function POST(request: Request) {
     const clientSession = cookieStore.get('client_session')
 
     if (!clientSession) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return NextResponse.json({
+        success: false,
+        error: 'Not logged in - no session cookie found'
+      }, { status: 401 })
     }
 
     const clientId = clientSession.value
+    console.log('🎯 API: Creating article for client:', clientId)
+
     const body = await request.json()
+    console.log('📦 API: Request body:', {
+      topic: body.topic,
+      targetAudience: body.targetAudience,
+      hasKeywords: !!body.keywords,
+      hasSources: !!body.sources,
+      hasBriefing: !!body.briefing
+    })
 
     // Validate input
     const { topic, targetAudience, keywords, desiredWordCount, sources, briefing } = body
@@ -32,8 +41,6 @@ export async function POST(request: Request) {
       )
     }
 
-    console.log('🎯 Creating article for client:', clientId)
-
     // Run orchestrator with client_id
     const result = await createContent({
       topic,
@@ -42,16 +49,15 @@ export async function POST(request: Request) {
       desiredWordCount: desiredWordCount || 700,
       sources: sources || [],
       briefing: briefing || undefined,
-      userId: 'web-user', // TODO: Add user-level auth later
-      clientId // Add client_id from session
+      userId: clientId,
+      clientId: clientId
     })
 
-    console.log('✅ Article created:', result.articleId)
+    console.log('✅ API: Article created:', result.article?.id)
 
-    // Return article ID at top level AND in article object for redundancy
     return NextResponse.json({
-      success: result.success,
-      articleId: result.articleId,  // Explicit ID at top level
+      success: true,
+      articleId: result.article?.id,
       article: result.article,
       compliance: result.compliance,
       qualityWarnings: result.qualityWarnings,
@@ -59,12 +65,17 @@ export async function POST(request: Request) {
     })
 
   } catch (error: any) {
-    console.error('API Error:', error)
+    // CRITICAL: Log full error details
+    console.error('💥 API ERROR:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    })
+
     return NextResponse.json(
       {
         success: false,
-        error: 'Internal server error',
-        details: error.message
+        error: error.message || 'Unknown error during article creation'
       },
       { status: 500 }
     )
