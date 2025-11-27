@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -7,39 +8,47 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ChevronLeft, DownloadIcon, CopyIcon, CheckCircle2Icon } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { PageWrapper } from '@/components/page-wrapper'
+import { supabase } from '@/lib/supabase/client'
 
 async function getArticle(id: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://renault-content-ai.vercel.app'
-    const url = `${baseUrl}/api/articles/${id}`
+    const cookieStore = await cookies()
+    const clientSession = cookieStore.get('client_session')
 
-    console.log('Fetching article from:', url)
-
-    const response = await fetch(url, {
-      cache: 'no-store',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-
-    if (!response.ok) {
-      console.error('API response not OK:', response.status, response.statusText)
+    if (!clientSession) {
+      console.error('No client session found')
       return null
     }
 
-    const data = await response.json()
-    console.log('API response:', data)
+    const clientId = clientSession.value
 
-    if (!data.success) {
-      console.error('API returned error:', data.error)
+    console.log('📄 Fetching article:', id)
+    console.log('👤 Client ID:', clientId)
+
+    const { data: article, error } = await supabase
+      .from('articles')
+      .select('*')
+      .eq('id', id)
+      .eq('client_id', clientId)
+      .single()
+
+    if (error) {
+      console.error('❌ Supabase error:', error)
       return null
     }
 
-    console.log('Article loaded successfully:', data.article.id)
-    return data.article
+    if (!article) {
+      console.error('❌ Article not found')
+      return null
+    }
+
+    // Type assertion needed because Supabase types are not properly inferred
+    const typedArticle = article as any
+    console.log('✅ Article loaded successfully:', typedArticle.title)
+    return typedArticle
 
   } catch (error) {
-    console.error('Failed to fetch article:', error)
+    console.error('💥 Failed to fetch article:', error)
     return null
   }
 }
