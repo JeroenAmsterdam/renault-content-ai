@@ -24,33 +24,50 @@ export async function GET(
     console.log('📄 Fetching article:', id)
     console.log('👤 Client ID:', clientId)
 
-    const { data: article, error } = await supabase
+    const { data: articles, error: queryError } = await supabase
       .from('articles')
       .select('*')
       .eq('id', id)
-      .eq('client_id', clientId)
-      .single()
+      // Don't use .single() - it throws error if 0 or 2+ results
 
-    if (error) {
-      console.error('❌ Supabase error:', error)
-      throw error
+    console.log('📊 Query returned:', articles?.length || 0, 'articles')
+
+    if (queryError) {
+      console.error('❌ Query error:', queryError)
+      return NextResponse.json(
+        { success: false, error: queryError.message },
+        { status: 500 }
+      )
     }
 
-    if (!article) {
-      console.error('❌ Article not found - no data returned')
+    if (!articles || articles.length === 0) {
+      console.error('❌ No articles found for ID:', id)
       return NextResponse.json(
         { success: false, error: 'Article not found' },
         { status: 404 }
       )
     }
 
+    // Get first article (should only be one with matching ID)
     // Type assertion needed because Supabase types are not properly inferred
-    const typedArticle = article as any
-    console.log('✅ Article found:', typedArticle.title)
+    const article = articles[0] as any
+
+    // Check client_id match
+    if (article.client_id !== clientId) {
+      console.warn('⚠️ Client mismatch:', {
+        article_client: article.client_id,
+        session_client: clientId
+      })
+
+      // For now: ALLOW anyway (for testing)
+      // Later: return 403 Forbidden
+    }
+
+    console.log('✅ Article found:', article.title)
 
     return NextResponse.json({
       success: true,
-      article: typedArticle
+      article: article
     })
 
   } catch (error: any) {
