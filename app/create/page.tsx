@@ -79,12 +79,13 @@ export default function CreatePage() {
         // Get article ID - try multiple paths for robustness
         const articleId = result.articleId || result.article?.id
 
-        console.log('✅ Article created successfully')
-        console.log('📝 Article ID:', articleId)
-        console.log('📋 Full result:', result)
+        console.log('✅ CREATE PAGE: Article created successfully')
+        console.log('📝 CREATE PAGE: Article ID:', articleId)
+        console.log('📋 CREATE PAGE: Full result:', JSON.stringify(result, null, 2))
 
         if (!articleId) {
-          console.error('❌ No article ID in response!')
+          console.error('❌ CREATE PAGE: No article ID in response!')
+          console.error('❌ CREATE PAGE: Result object:', result)
           // Fallback: redirect to articles list
           setTimeout(() => {
             window.location.href = '/articles'
@@ -92,13 +93,18 @@ export default function CreatePage() {
           return
         }
 
-        // Use window.location for hard redirect (bypasses Next.js cache)
-        console.log('🔄 Redirecting to:', `/articles/${articleId}`)
+        // Add delay to ensure Supabase replication completes
+        console.log('⏳ CREATE PAGE: Waiting 2 seconds for Supabase replication...')
+        console.log('🔄 CREATE PAGE: Will redirect to:', `/articles/${articleId}`)
+
         setTimeout(() => {
+          console.log('🚀 CREATE PAGE: Starting redirect NOW')
           window.location.href = `/articles/${articleId}`
-        }, 1500)
+        }, 2000)  // Increased from 1500ms to 2000ms
       } else {
-        console.error('❌ Article creation failed:', result.error)
+        console.error('❌ CREATE PAGE: Article creation failed')
+        console.error('❌ CREATE PAGE: Error:', result.error)
+        console.error('❌ CREATE PAGE: Full result:', result)
         setError(result.error || 'Er ging iets mis')
         setIsCreating(false)
       }
