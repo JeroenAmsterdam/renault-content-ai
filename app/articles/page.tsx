@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { PlusIcon, FileTextIcon, ChevronLeft } from 'lucide-react'
 import { PageWrapper } from '@/components/page-wrapper'
-import { supabase } from '@/lib/supabase/client'
+import { getSupabaseAdmin } from '@/lib/supabase/client'
 
 async function getArticles() {
   try {
@@ -25,6 +25,8 @@ async function getArticles() {
 
     const clientId = clientSession.value
     console.log('👤 ARTICLES LIST: Querying with client_id:', clientId)
+
+    const supabase = getSupabaseAdmin()
 
     // TEMPORARY DEBUG: Query WITHOUT client_id filter to see all articles
     const { data: allArticles, error: debugError } = await supabase
