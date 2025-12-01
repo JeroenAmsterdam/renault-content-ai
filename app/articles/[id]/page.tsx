@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ChevronLeft, DownloadIcon, CopyIcon, CheckCircle2Icon } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { PageWrapper } from '@/components/page-wrapper'
-import { supabase } from '@/lib/supabase/client'
+import { getSupabaseAdmin } from '@/lib/supabase/client'
 
 async function getArticle(id: string) {
   try {
@@ -27,6 +27,8 @@ async function getArticle(id: string) {
 
     console.log('📄 DETAIL PAGE: Fetching article:', id)
     console.log('👤 DETAIL PAGE: Client ID:', clientId)
+
+    const supabase = getSupabaseAdmin()
 
     // Don't use .single() - query as array to avoid "Cannot coerce" error
     const { data: articles, error: queryError } = await supabase
