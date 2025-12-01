@@ -26,11 +26,6 @@ export default async function HomePage() {
   return (
     <PageWrapper>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* DEBUG: Deployment verification */}
-        <div className="text-center py-4 bg-red-500 text-white font-bold mb-8">
-          🚨 DEBUG: Deployment timestamp {new Date().toISOString()}
-        </div>
-
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="bg-white/95 backdrop-blur-sm shadow-xl border-0">
