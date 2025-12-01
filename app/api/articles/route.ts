@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import { supabase } from '@/lib/supabase/client'
+import { getSupabaseAdmin } from '@/lib/supabase/client'
 
 // GET /api/articles - List all articles for the logged-in client
 export async function GET(request: Request) {
@@ -41,7 +41,8 @@ export async function GET(request: Request) {
     console.log('- Order: created_at DESC')
     console.log('- Limit:', limit)
 
-    let query = supabase
+    const supabaseAdmin = getSupabaseAdmin()
+    let query = supabaseAdmin
       .from('articles')
       .select('*')
       .eq('client_id', clientId)
