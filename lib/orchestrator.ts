@@ -379,12 +379,22 @@ async function saveArticle(data: any) {
     throw new Error('SAVE ERROR: clientId is missing from save data')
   }
 
+  // Determine status based on compliance and quality warnings
+  // Allowed values: 'draft', 'compliance_check', 'approved'
+  let status = 'approved' // Default to approved if all checks pass
+
+  if (data.qualityWarnings?.length > 0) {
+    status = 'draft' // Has quality warnings - needs review
+  } else if (!data.compliance.approved) {
+    status = 'compliance_check' // Failed compliance checks
+  }
+
   const insertData = {
     title: data.article.title,
     content: data.article.content,
     topic: data.request.topic,
     target_audience: data.request.targetAudience,
-    status: data.qualityWarnings?.length > 0 ? 'needs_review' : 'draft',
+    status: status,
     word_count: data.article.wordCount,
     created_by: data.userId || 'system',
     client_id: data.clientId,  // ← MUST be here
