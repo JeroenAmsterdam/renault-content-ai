@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import { supabase } from '@/lib/supabase/client'
+import { getSupabaseAdmin } from '@/lib/supabase/client'
 
 // GET /api/articles/:id - Get single article
 export async function GET(
@@ -24,7 +24,8 @@ export async function GET(
     console.log('📄 Fetching article:', id)
     console.log('👤 Client ID:', clientId)
 
-    const { data: articles, error: queryError } = await supabase
+    const supabaseAdmin = getSupabaseAdmin()
+    const { data: articles, error: queryError } = await supabaseAdmin
       .from('articles')
       .select('*')
       .eq('id', id)
@@ -99,7 +100,8 @@ export async function PUT(
     const body = await request.json()
     const { title, content, status } = body
 
-    const { data, error } = await (supabase
+    const supabaseAdmin = getSupabaseAdmin()
+    const { data, error } = await (supabaseAdmin
       .from('articles') as any)
       .update({
         title,
@@ -146,7 +148,8 @@ export async function DELETE(
     const clientId = clientSession.value
     const { id } = await params
 
-    const { error } = await supabase
+    const supabaseAdmin = getSupabaseAdmin()
+    const { error } = await supabaseAdmin
       .from('articles')
       .delete()
       .eq('id', id)
