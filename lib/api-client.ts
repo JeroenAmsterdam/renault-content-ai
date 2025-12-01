@@ -15,7 +15,11 @@ export async function createArticle(data: {
 }) {
   const response = await fetch('/api/content/create', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Content-Type': 'application/json'
+    },
     body: JSON.stringify(data)
   })
 
