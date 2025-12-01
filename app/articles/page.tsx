@@ -15,13 +15,33 @@ async function getArticles() {
     const cookieStore = await cookies()
     const clientSession = cookieStore.get('client_session')
 
+    console.log('📋 ARTICLES LIST: Starting fetch')
+    console.log('🍪 ARTICLES LIST: Session cookie:', clientSession?.value)
+
     if (!clientSession) {
-      console.error('No client session found')
+      console.error('❌ ARTICLES LIST: No client session found')
       return []
     }
 
     const clientId = clientSession.value
+    console.log('👤 ARTICLES LIST: Querying with client_id:', clientId)
 
+    // TEMPORARY DEBUG: Query WITHOUT client_id filter to see all articles
+    const { data: allArticles, error: debugError } = await supabase
+      .from('articles')
+      .select('id, title, client_id, created_at')
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    console.log('🔍 ARTICLES LIST: Total articles in DB (last 5):', allArticles?.length || 0)
+    if (allArticles && allArticles.length > 0) {
+      console.log('🔍 ARTICLES LIST: Sample articles with client_ids:')
+      allArticles.forEach((a: any) => {
+        console.log(`   - ${a.title?.substring(0, 50)} | client_id: ${a.client_id}`)
+      })
+    }
+
+    // Now query with client_id filter
     const { data: articles, error } = await supabase
       .from('articles')
       .select('*')
@@ -30,13 +50,21 @@ async function getArticles() {
       .limit(20)
 
     if (error) {
-      console.error('Supabase error:', error)
+      console.error('❌ ARTICLES LIST: Supabase error:', error)
       return []
+    }
+
+    console.log('✅ ARTICLES LIST: Found', articles?.length || 0, 'articles for client:', clientId)
+
+    if (!articles || articles.length === 0) {
+      console.warn('⚠️ ARTICLES LIST: No articles found for your client_id')
+      console.warn('⚠️ ARTICLES LIST: This might be a client_id mismatch!')
+      console.warn('⚠️ ARTICLES LIST: Check if articles in Supabase have different client_id')
     }
 
     return articles || []
   } catch (error) {
-    console.error('Failed to fetch articles:', error)
+    console.error('💥 ARTICLES LIST: Failed to fetch articles:', error)
     return []
   }
 }
