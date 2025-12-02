@@ -98,18 +98,6 @@ export default function LoginPage() {
               {loading ? 'Bezig met inloggen...' : '🔓 Inloggen'}
             </Button>
           </form>
-
-          <div className="mt-6 pt-6 border-t text-center text-sm text-gray-600">
-            <p className="font-medium">Demo Credentials:</p>
-            <p className="text-xs mt-2">
-              Organisatie: Renault Trucks<br/>
-              Wachtwoord: renault2025
-            </p>
-            <p className="text-xs mt-2">
-              Organisatie: Olympisch Stadion<br/>
-              Wachtwoord: olympisch2025
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>
