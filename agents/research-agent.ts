@@ -24,11 +24,12 @@ const RESEARCH_AGENT_PROMPT = `Fact-gathering researcher voor Renault Trucks NL.
 
 REGELS:
 1. Alleen verifieerbare feiten met bron
-2. Prioriteer: renault-trucks.com/nl, officiële persberichten
+2. Prioriteer: renault-trucks.com/nl, officiële persberichten, CUSTOM SOURCES als gegeven
 3. Nooit specificaties verzinnen
 4. Bij twijfel: niet includeren
+5. **CUSTOM SOURCES HEBBEN ABSOLUTE PRIORITEIT** - Gebruik deze eerst!
 
-CONFIDENCE: 0.95+ officieel, 0.85+ Renault site, 0.70+ media
+CONFIDENCE: 0.95+ officieel/custom sources, 0.85+ Renault site, 0.70+ media
 CATEGORIEËN: technical, specification, marketing, general
 
 OUTPUT JSON:
@@ -38,8 +39,68 @@ OUTPUT JSON:
   "summary": "..."
 }
 
-3-15 facts, elk met sourceUrl, Nederlandse bronnen, recente info.
+MINIMUM: 15 facts voor bruikbaar artikel, elk met sourceUrl, Nederlandse info, recente data.
 `
+
+const MINIMUM_FACTS = 15 // Minimum facts required for quality article
+
+/**
+ * Fetch and extract text content from custom source URLs
+ *
+ * @param urls - Array of URLs to fetch
+ * @returns Extracted text content from all sources
+ */
+async function fetchCustomSources(urls: string[]): Promise<string> {
+  if (urls.length === 0) return ''
+
+  console.log(`\n📥 Fetching ${urls.length} custom sources...`)
+  let customContent = '\n\n=== CUSTOM SOURCES (PRIORITAIR GEBRUIKEN) ===\n'
+
+  for (const url of urls) {
+    try {
+      console.log(`   Fetching: ${url}`)
+
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; ResearchBot/1.0)'
+        },
+        signal: AbortSignal.timeout(10000) // 10 second timeout
+      })
+
+      if (!response.ok) {
+        console.warn(`   ⚠️  HTTP ${response.status} for ${url}`)
+        continue
+      }
+
+      const html = await response.text()
+
+      // Extract text content (strip HTML tags and scripts)
+      const textContent = html
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&[a-z]+;/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+
+      // Limit content size to avoid token bloat (keep first 4000 chars)
+      const limitedContent = textContent.substring(0, 4000)
+
+      customContent += `\n\n--- BRON: ${url} ---\n${limitedContent}\n`
+      console.log(`   ✅ Extracted ${textContent.length} chars (using ${limitedContent.length})`)
+
+    } catch (error: any) {
+      console.error(`   ❌ Failed to fetch ${url}:`, error.message)
+    }
+  }
+
+  customContent += '\n\n=== EINDE CUSTOM SOURCES ===\n'
+  customContent += 'INSTRUCTIE: Extraheer MINIMAAL 15 specifieke, verifieerbare feiten uit bovenstaande bronnen.\n'
+  customContent += 'Gebruik deze bronnen met PRIORITEIT boven web search.\n\n'
+
+  return customContent
+}
 
 /**
  * Run the Research Agent to gather facts on a specific topic
@@ -64,30 +125,17 @@ export async function runResearchAgent(
   const startTime = Date.now()
 
   try {
-    // Perform web search (will prioritize custom sources if provided)
-    console.log('\n🌐 Performing web search...')
-    if (sources.length > 0) {
-      console.log(`   Prioritizing ${sources.length} custom sources`)
-    }
+    // Fetch custom sources content if provided
+    const customSourcesContent = await fetchCustomSources(sources)
 
     // Build search query
     const searchQuery = keywords.length > 0
       ? `${topic} ${keywords.join(' ')}`
       : topic
 
-    console.log(`   Search query: "${searchQuery}"`)
-
-    // Build custom sources instruction
-    const sourcesInstruction = sources.length > 0
-      ? `\n\nPRIORITEIT BRONNEN (gebruik deze EERST):
-${sources.map((url, i) => `${i + 1}. ${url}`).join('\n')}
-
-Search deze URLs PRIORITAIR. Gebruik web search om ze te vinden en te analyseren.
-Geef feiten uit deze bronnen extra voorkeur.`
-      : ''
-    console.log(`🔍 Research Agent starting: "${searchQuery}"`)
+    console.log(`\n🌐 Starting research for: "${searchQuery}"`)
     if (sources.length > 0) {
-      console.log(`   Note: ${sources.length} custom sources provided (feature pending)`)
+      console.log(`   ✅ Custom sources fetched and ready to analyze`)
     }
 
     // Call Claude with web search tool
@@ -109,13 +157,16 @@ Geef feiten uit deze bronnen extra voorkeur.`
 
 ONDERWERP: ${topic}
 KEYWORDS: ${keywords.join(', ')}
-${sourcesInstruction}
 
-Zoek gedetailleerde, verifieerbare informatie over dit onderwerp specifiek voor Renault Trucks. Focus op officiële bronnen en technische specificaties.
+${customSourcesContent}
 
-Gebruik web search om actuele en accurate informatie te vinden.
+${sources.length > 0
+  ? 'PRIORITEIT: Extraheer eerst feiten uit de bovenstaande CUSTOM SOURCES. Deze zijn geverifieerd en betrouwbaar.'
+  : 'Gebruik web search om actuele en accurate informatie te vinden over dit onderwerp.'}
 
-Return het resultaat als een geldig JSON object.`,
+Zoek gedetailleerde, verifieerbare informatie specifiek voor Renault Trucks. Focus op officiële bronnen en technische specificaties.
+
+Return het resultaat als een geldig JSON object met MINIMAAL ${MINIMUM_FACTS} facts.`,
         },
       ],
     })
@@ -215,7 +266,19 @@ Return het resultaat als een geldig JSON object.`,
     // Remove duplicates
     const uniqueFacts = deduplicateFacts(facts)
 
-    console.log(`\n✅ Research completed: ${uniqueFacts.length} unique facts found`)
+    console.log(`\n📊 Research completed: ${uniqueFacts.length} unique facts found`)
+
+    // Validate minimum facts threshold
+    if (uniqueFacts.length < MINIMUM_FACTS) {
+      const errorMessage = sources.length > 0
+        ? `Niet genoeg informatie gevonden in de ${sources.length} bronnen. Gevonden: ${uniqueFacts.length} facts, minimaal nodig: ${MINIMUM_FACTS}. Controleer of de bronnen relevante informatie bevatten over "${topic}".`
+        : `Onvoldoende informatie gevonden over "${topic}". Gevonden: ${uniqueFacts.length} facts, minimaal nodig: ${MINIMUM_FACTS}. Probeer meer specifieke bronnen toe te voegen of pas je onderwerp aan.`
+
+      console.error(`❌ ${errorMessage}`)
+      throw new Error(errorMessage)
+    }
+
+    console.log(`✅ Facts threshold met (${uniqueFacts.length}/${MINIMUM_FACTS})`)
 
     // Store facts in database
     if (uniqueFacts.length > 0) {
