@@ -37,6 +37,9 @@ export interface Article {
   created_at: string
   updated_at: string
   metadata: ArticleMetadata
+  version: number
+  parent_article_id: string | null
+  version_notes: string | null
 }
 
 export interface ArticleVersion {
