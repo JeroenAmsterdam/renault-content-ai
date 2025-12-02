@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import { supabase } from '@/lib/supabase/client'
+import { getSupabaseAdmin } from '@/lib/supabase/client'
 
 // GET /api/stats - Dashboard statistics for the logged-in client
 export async function GET() {
@@ -16,6 +16,8 @@ export async function GET() {
     }
 
     const clientId = clientSession.value
+
+    const supabase = getSupabaseAdmin()
 
     // Count articles by status for this client
     const { data: articles, error: articlesError } = await supabase
