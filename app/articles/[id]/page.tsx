@@ -8,10 +8,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ChevronLeft, DownloadIcon, CopyIcon, CheckCircle2Icon } from 'lucide-react'
+import { ChevronLeft, DownloadIcon, CopyIcon, CheckCircle2Icon, GitBranchIcon } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { PageWrapper } from '@/components/page-wrapper'
 import { getSupabaseAdmin } from '@/lib/supabase/client'
+import { RewriteForm } from '@/components/rewrite-form'
 
 async function getArticle(id: string) {
   try {
@@ -80,6 +81,33 @@ async function getArticle(id: string) {
   }
 }
 
+async function getVersionHistory(article: any) {
+  try {
+    const supabase = getSupabaseAdmin()
+
+    // Determine the parent article ID (v1)
+    const parentId = article.parent_article_id || article.id
+
+    // Fetch all versions: v1 (parent) + all children
+    const { data: versions, error } = await supabase
+      .from('articles')
+      .select('id, version, version_notes, created_at, title')
+      .or(`id.eq.${parentId},parent_article_id.eq.${parentId}`)
+      .order('version', { ascending: true })
+
+    if (error) {
+      console.error('❌ Failed to fetch version history:', error)
+      return []
+    }
+
+    return versions || []
+
+  } catch (error) {
+    console.error('💥 Failed to fetch version history:', error)
+    return []
+  }
+}
+
 function getStatusColor(status: string) {
   switch (status) {
     case 'approved': return 'bg-green-100 text-green-800'
@@ -105,6 +133,7 @@ export default async function ArticlePage({
   const metadata = article.metadata || {}
   const factsUsed = metadata.factsUsed || []
   const compliance = metadata.compliance || {}
+  const versions = await getVersionHistory(article)
 
   return (
     <PageWrapper>
@@ -119,6 +148,27 @@ export default async function ArticlePage({
 
         {/* Header */}
         <div className="mb-8">
+          {/* Version badge and navigation */}
+          <div className="flex items-center gap-3 mb-3">
+            <Badge className="bg-purple-500/90 text-white px-3 py-1 text-sm font-medium">
+              <GitBranchIcon className="w-3 h-3 mr-1 inline" />
+              Versie {article.version || 1}
+            </Badge>
+            {article.parent_article_id && (
+              <Link href={`/articles/${article.parent_article_id}`}>
+                <Button variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10 text-xs">
+                  <ChevronLeft className="w-3 h-3 mr-1" />
+                  Terug naar v1
+                </Button>
+              </Link>
+            )}
+            {article.version_notes && (
+              <span className="text-white/70 text-sm italic">
+                "{article.version_notes}"
+              </span>
+            )}
+          </div>
+
           <h1 className="text-5xl font-bold text-white drop-shadow-lg mb-4">
             {article.title}
           </h1>
@@ -295,6 +345,67 @@ export default async function ArticlePage({
             </CardContent>
           </Tabs>
         </Card>
+
+        {/* Version History */}
+        {versions.length > 1 && (
+          <Card className="mt-8 bg-white/95 backdrop-blur-sm shadow-xl border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <GitBranchIcon className="w-5 h-5" />
+                Versie geschiedenis ({versions.length} versies)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {versions.map((version: any) => (
+                  <Link
+                    key={version.id}
+                    href={`/articles/${version.id}`}
+                    className={`block p-4 rounded-lg border-2 transition-all ${
+                      version.id === article.id
+                        ? 'border-purple-500 bg-purple-50'
+                        : 'border-gray-200 hover:border-purple-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge className={version.id === article.id ? 'bg-purple-500' : 'bg-gray-500'}>
+                            v{version.version}
+                          </Badge>
+                          {version.id === article.id && (
+                            <span className="text-xs text-purple-600 font-medium">
+                              (huidige versie)
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm font-medium text-gray-900 mb-1">
+                          {version.title}
+                        </p>
+                        {version.version_notes && (
+                          <p className="text-xs text-gray-600 italic">
+                            "{version.version_notes}"
+                          </p>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-500 ml-4">
+                        {new Date(version.created_at).toLocaleDateString('nl-NL')}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Rewrite Form */}
+        <div className="mt-8">
+          <RewriteForm
+            articleId={article.id}
+            currentVersion={article.version || 1}
+          />
+        </div>
       </div>
     </PageWrapper>
   )
