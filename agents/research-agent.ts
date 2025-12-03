@@ -39,10 +39,10 @@ OUTPUT JSON:
   "summary": "..."
 }
 
-MINIMUM: 15 facts voor bruikbaar artikel, elk met sourceUrl, Nederlandse info, recente data.
+MINIMUM: 8 facts voor bruikbaar artikel, elk met sourceUrl, Nederlandse info, recente data.
 `
 
-const MINIMUM_FACTS = 15 // Minimum facts required for quality article
+const MINIMUM_FACTS = 8 // Minimum facts required for quality article (lowered from 15 for better UX)
 
 /**
  * Fetch and extract text content from custom source URLs
@@ -96,7 +96,7 @@ async function fetchCustomSources(urls: string[]): Promise<string> {
   }
 
   customContent += '\n\n=== EINDE CUSTOM SOURCES ===\n'
-  customContent += 'INSTRUCTIE: Extraheer MINIMAAL 15 specifieke, verifieerbare feiten uit bovenstaande bronnen.\n'
+  customContent += 'INSTRUCTIE: Extraheer MINIMAAL 8 specifieke, verifieerbare feiten uit bovenstaande bronnen.\n'
   customContent += 'Gebruik deze bronnen met PRIORITEIT boven web search.\n\n'
 
   return customContent
@@ -268,17 +268,17 @@ Return het resultaat als een geldig JSON object met MINIMAAL ${MINIMUM_FACTS} fa
 
     console.log(`\n📊 Research completed: ${uniqueFacts.length} unique facts found`)
 
-    // Validate minimum facts threshold
+    // Validate minimum facts threshold (warning only, not blocking)
     if (uniqueFacts.length < MINIMUM_FACTS) {
-      const errorMessage = sources.length > 0
-        ? `Niet genoeg informatie gevonden in de ${sources.length} bronnen. Gevonden: ${uniqueFacts.length} facts, minimaal nodig: ${MINIMUM_FACTS}. Controleer of de bronnen relevante informatie bevatten over "${topic}".`
-        : `Onvoldoende informatie gevonden over "${topic}". Gevonden: ${uniqueFacts.length} facts, minimaal nodig: ${MINIMUM_FACTS}. Probeer meer specifieke bronnen toe te voegen of pas je onderwerp aan.`
+      const warningMessage = sources.length > 0
+        ? `⚠️  Beperkte informatie: ${uniqueFacts.length}/${MINIMUM_FACTS} facts gevonden uit ${sources.length} bronnen voor "${topic}"`
+        : `⚠️  Beperkte informatie: ${uniqueFacts.length}/${MINIMUM_FACTS} facts gevonden over "${topic}"`
 
-      console.error(`❌ ${errorMessage}`)
-      throw new Error(errorMessage)
+      console.warn(warningMessage)
+      console.warn('   Artikel wordt toch gegenereerd maar kan placeholders bevatten')
+    } else {
+      console.log(`✅ Facts threshold gehaald (${uniqueFacts.length}/${MINIMUM_FACTS})`)
     }
-
-    console.log(`✅ Facts threshold met (${uniqueFacts.length}/${MINIMUM_FACTS})`)
 
     // Store facts in database
     if (uniqueFacts.length > 0) {
